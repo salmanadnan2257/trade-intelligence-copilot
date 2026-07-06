@@ -1,0 +1,15 @@
+{
+  "_note": "Author's independent faithfulness labels on a 12-item subset, used to validate the gemini-2.5-pro judge. true = every load-bearing claim is grounded in the evidence the answer was allowed to use. Labelled by reading each answer against its SQL rows / HS-lookup rows / regulation chunks.",
+  "sql-01": true,
+  "sql-04": true,
+  "sql-10": true,
+  "sql-12": true,
+  "ret-01": true,
+  "ret-04": true,
+  "ret-07": false,
+  "multi-01": false,
+  "multi-02": true,
+  "multi-03": true,
+  "refuse-01": true,
+  "refuse-06": true
+}

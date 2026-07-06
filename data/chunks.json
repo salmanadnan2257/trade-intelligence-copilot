@@ -1,0 +1,338 @@
+[
+  {
+    "id": "anti-dumping-safeguard#s1",
+    "doc": "anti-dumping-safeguard",
+    "doc_title": "Anti-dumping and safeguard duties",
+    "section": "1. Trade-remedy duties",
+    "text": "Separate from ordinary customs duty, a country can impose trade-remedy measures. An anti-dumping duty targets goods sold for export at less than their normal value where this injures a domestic industry. A safeguard measure is a temporary restraint used when a surge of imports threatens serious injury. In Pakistan these are handled by the national tariff authority."
+  },
+  {
+    "id": "anti-dumping-safeguard#s2",
+    "doc": "anti-dumping-safeguard",
+    "doc_title": "Anti-dumping and safeguard duties",
+    "section": "2. How they arise",
+    "text": "These duties follow an investigation triggered by a complaint from a domestic industry. If the investigation confirms dumping or injurious import surge, a duty can be applied to specific products from specific origins for a defined period."
+  },
+  {
+    "id": "anti-dumping-safeguard#s3",
+    "doc": "anti-dumping-safeguard",
+    "doc_title": "Anti-dumping and safeguard duties",
+    "section": "3. Effect on an importer",
+    "text": "An anti-dumping or safeguard duty can substantially raise the landed cost of an affected product from an affected country, even when the basic tariff is unchanged. Importers check whether any trade-remedy duty currently applies to their product and origin."
+  },
+  {
+    "id": "certificate-of-origin-fta#s1",
+    "doc": "certificate-of-origin-fta",
+    "doc_title": "Certificate of origin and preferential trade",
+    "section": "1. What origin means for duty",
+    "text": "The country of origin of goods can change the duty rate when a trade agreement offers preferential (lower) tariffs. To claim a preference, an importer usually presents a certificate of origin proving the goods qualify under the agreement's origin rules."
+  },
+  {
+    "id": "certificate-of-origin-fta#s2",
+    "doc": "certificate-of-origin-fta",
+    "doc_title": "Certificate of origin and preferential trade",
+    "section": "2. Free trade and preferential agreements",
+    "text": "Pakistan has preferential and free-trade arrangements with several partners. Goods that meet the origin rules of the relevant agreement can enter at reduced or zero duty, while goods from other origins pay the standard rate. The rules of origin, not just where a ship sailed from, decide eligibility."
+  },
+  {
+    "id": "certificate-of-origin-fta#s3",
+    "doc": "certificate-of-origin-fta",
+    "doc_title": "Certificate of origin and preferential trade",
+    "section": "3. Getting it right",
+    "text": "A missing or incorrect certificate of origin means the preference is denied and full duty applies. Importers confirm both that an agreement covers the product and that the goods actually satisfy its origin rules before claiming a lower rate."
+  },
+  {
+    "id": "confectionery-hs-1704#s1",
+    "doc": "confectionery-hs-1704",
+    "doc_title": "Sugar confectionery (HS 1704)",
+    "section": "1. What sits in heading 1704",
+    "text": "HS heading 1704 covers sugar confectionery not containing cocoa, including chewing gum, and certain white-chocolate style preparations classified here rather than under cocoa. In this dataset, heading 1704 subcategories include chewing gum and other sugar confectionery, and it is one of the more frequently occurring headings."
+  },
+  {
+    "id": "confectionery-hs-1704#s2",
+    "doc": "confectionery-hs-1704",
+    "doc_title": "Sugar confectionery (HS 1704)",
+    "section": "2. Food-safety angle",
+    "text": "Finished confectionery is a consumer food product, so labeling, ingredient, and food-safety rules apply in addition to customs classification. Importers should expect food-standard checks alongside normal customs assessment."
+  },
+  {
+    "id": "confectionery-hs-1704#s3",
+    "doc": "confectionery-hs-1704",
+    "doc_title": "Sugar confectionery (HS 1704)",
+    "section": "3. Classification care",
+    "text": "Whether a sweet product falls in 1704 or in a cocoa heading depends on its composition, especially cocoa content. Confirm the correct heading for the actual recipe with the current tariff before declaring."
+  },
+  {
+    "id": "customs-duty-concepts#s1",
+    "doc": "customs-duty-concepts",
+    "doc_title": "Customs duty concepts: ad valorem, specific, and tariff lines",
+    "section": "1. How duty is charged",
+    "text": "Customs duty is charged either ad valorem (a percentage of the assessed value), specific (an amount per unit of quantity such as per kilogram or per metric tonne), or a mix. The rate attaches to the HS tariff line, so classification and valuation together decide the amount owed."
+  },
+  {
+    "id": "customs-duty-concepts#s2",
+    "doc": "customs-duty-concepts",
+    "doc_title": "Customs duty concepts: ad valorem, specific, and tariff lines",
+    "section": "2. Customs value",
+    "text": "The customs value is normally based on the transaction value, the price actually paid or payable, adjusted by valuation rules. Under-declaring value to reduce duty is an offense. Trade records that show value and quantity, such as USD value and kilograms, let an analyst compute an effective unit price."
+  },
+  {
+    "id": "customs-duty-concepts#s3",
+    "doc": "customs-duty-concepts",
+    "doc_title": "Customs duty concepts: ad valorem, specific, and tariff lines",
+    "section": "3. Layers of charges",
+    "text": "On top of basic customs duty, an import may attract additional charges such as regulatory duty, additional customs duty, sales tax, and withholding tax, depending on the item and current policy. Because these change, confirm the current stack of charges for the specific tariff line rather than assuming a single number."
+  },
+  {
+    "id": "food-safety-fortification#s1",
+    "doc": "food-safety-fortification",
+    "doc_title": "Food safety and fortification for sugar products",
+    "section": "1. Food-standard oversight",
+    "text": "Sugar and sugar-based food products sold for human consumption are subject to food-safety and standards rules in addition to customs classification. Provincial food authorities and national standards bodies set quality, labeling, and hygiene requirements that apply to imported and domestic products alike."
+  },
+  {
+    "id": "food-safety-fortification#s2",
+    "doc": "food-safety-fortification",
+    "doc_title": "Food safety and fortification for sugar products",
+    "section": "2. Fortification context",
+    "text": "Some staple foods are subject to fortification programs intended to address nutrient deficiencies. Where a fortification requirement applies to a product category, importers and producers may need to meet it. Whether a specific sugar product is covered depends on the current rules for that category."
+  },
+  {
+    "id": "food-safety-fortification#s3",
+    "doc": "food-safety-fortification",
+    "doc_title": "Food safety and fortification for sugar products",
+    "section": "3. Practical effect",
+    "text": "A consignment that clears customs can still be stopped or recalled if it fails food-safety or labeling checks. Importers of edible sugar products confirm the applicable food-standard and labeling requirements with the relevant authority."
+  },
+  {
+    "id": "hs-codes-basics#s1",
+    "doc": "hs-codes-basics",
+    "doc_title": "HS codes: structure and how classification works",
+    "section": "1. What an HS code is",
+    "text": "The Harmonized System (HS) is an international product-naming standard maintained by the World Customs Organization. Almost every trading country, including Pakistan, classifies goods for customs using HS codes. Correct classification decides the duty rate, any restrictions, and the statistics a shipment is recorded under."
+  },
+  {
+    "id": "hs-codes-basics#s2",
+    "doc": "hs-codes-basics",
+    "doc_title": "HS codes: structure and how classification works",
+    "section": "2. Reading the digits",
+    "text": "The first two digits are the chapter, the first four the heading, and the first six the subheading. The six-digit level is common worldwide. Countries then add more digits for their own tariff lines. In this dataset, sugar and sugar products sit in chapter 17: 1701 is cane or beet sugar, 1702 covers other sugars such as glucose, fructose, lactose and syrups, 1703 is molasses, and 1704 is sugar confectionery."
+  },
+  {
+    "id": "hs-codes-basics#s3",
+    "doc": "hs-codes-basics",
+    "doc_title": "HS codes: structure and how classification works",
+    "section": "3. Why classification matters",
+    "text": "A wrong HS code can mean the wrong duty, a missed import restriction, or a rejected declaration. When a product could fit more than one heading, classifiers use the General Rules of Interpretation and, where available, official rulings. For any specific product, confirm the tariff line against the current Pakistan Customs Tariff."
+  },
+  {
+    "id": "import-policy-order-restrictions#s1",
+    "doc": "import-policy-order-restrictions",
+    "doc_title": "Import Policy Order and restricted or banned items",
+    "section": "1. The policy framework",
+    "text": "Pakistan's Import Policy Order sets out what may be imported, what is banned, and what is allowed only under conditions such as prior permission, specific origin rules, or compliance certificates. It is updated from time to time, and a separate Export Policy Order governs exports."
+  },
+  {
+    "id": "import-policy-order-restrictions#s2",
+    "doc": "import-policy-order-restrictions",
+    "doc_title": "Import Policy Order and restricted or banned items",
+    "section": "2. Conditional and prohibited goods",
+    "text": "Some goods are prohibited outright, often for security, health, religious, or environmental reasons. Others are conditional: allowed only with a permit, a specific certificate, or from approved sources. Agricultural goods can carry SPS and quality conditions in addition to any commercial restriction."
+  },
+  {
+    "id": "import-policy-order-restrictions#s3",
+    "doc": "import-policy-order-restrictions",
+    "doc_title": "Import Policy Order and restricted or banned items",
+    "section": "3. Check before shipping",
+    "text": "Because the policy order changes, the safe practice is to confirm the current status of the exact goods, and any conditions, before contracting. This summary does not list current bans, which are subject to change by notification."
+  },
+  {
+    "id": "import-taxes-sales-withholding#s1",
+    "doc": "import-taxes-sales-withholding",
+    "doc_title": "Sales tax and withholding on imports",
+    "section": "1. Taxes at import",
+    "text": "In Pakistan, imports are generally subject to sales tax at the import stage and to a withholding of income tax collected at import, in addition to customs duties. These are collected by customs at clearance and later adjusted in the importer's tax filings."
+  },
+  {
+    "id": "import-taxes-sales-withholding#s2",
+    "doc": "import-taxes-sales-withholding",
+    "doc_title": "Sales tax and withholding on imports",
+    "section": "2. Registered versus unregistered",
+    "text": "The applicable rates and the ability to reclaim input tax often depend on whether the importer is registered for sales tax and on the nature of the goods, for example raw material versus finished product. Registration status can change the effective cost."
+  },
+  {
+    "id": "import-taxes-sales-withholding#s3",
+    "doc": "import-taxes-sales-withholding",
+    "doc_title": "Sales tax and withholding on imports",
+    "section": "3. Confirm the current rate",
+    "text": "Standard rates and any exemptions change with each finance act and by notification, so this summary does not quote a percentage. Verify the current sales-tax and withholding treatment for the specific goods before import."
+  },
+  {
+    "id": "letter-of-credit-banking#s1",
+    "doc": "letter-of-credit-banking",
+    "doc_title": "Letters of credit and banking for imports",
+    "section": "1. Paying the foreign supplier",
+    "text": "Cross-border payment for an import is usually routed through a bank. Common instruments are the letter of credit, where the bank guarantees payment once shipping documents match the terms, and contract or advance-payment arrangements. The instrument affects risk for both buyer and seller."
+  },
+  {
+    "id": "letter-of-credit-banking#s2",
+    "doc": "letter-of-credit-banking",
+    "doc_title": "Letters of credit and banking for imports",
+    "section": "2. Exchange and reporting rules",
+    "text": "Foreign-exchange transactions for imports are subject to central-bank rules. Banks check that documentation matches the goods declaration and that the transaction complies with foreign-exchange regulations. During periods of foreign-exchange pressure, additional approval steps can apply to opening letters of credit."
+  },
+  {
+    "id": "letter-of-credit-banking#s3",
+    "doc": "letter-of-credit-banking",
+    "doc_title": "Letters of credit and banking for imports",
+    "section": "3. Practical effect",
+    "text": "Delays or restrictions on opening a letter of credit can hold up an otherwise compliant import. Importers plan for banking lead time and confirm current foreign-exchange conditions with their bank."
+  },
+  {
+    "id": "molasses-hs-1703#s1",
+    "doc": "molasses-hs-1703",
+    "doc_title": "Molasses (HS 1703)",
+    "section": "1. What sits in heading 1703",
+    "text": "HS heading 1703 covers molasses resulting from the extraction or refining of sugar, including cane molasses. Molasses is a by-product of sugar production and is traded as an input for animal feed, fermentation, alcohol and yeast production, and some food uses."
+  },
+  {
+    "id": "molasses-hs-1703#s2",
+    "doc": "molasses-hs-1703",
+    "doc_title": "Molasses (HS 1703)",
+    "section": "2. Trade notes",
+    "text": "Molasses is a bulk, low-unit-value commodity compared with refined sugar, so logistics and storage matter. As with other chapter 17 goods, molasses trade can be affected by domestic supply policy and by any export-management measures in place at a given time."
+  },
+  {
+    "id": "molasses-hs-1703#s3",
+    "doc": "molasses-hs-1703",
+    "doc_title": "Molasses (HS 1703)",
+    "section": "3. Confirming requirements",
+    "text": "For a specific molasses shipment, confirm the applicable tariff line, any quality or food-safety conditions if used for human consumption, and the current policy status. This summary does not state a specific rate."
+  },
+  {
+    "id": "pakistan-import-documents#s1",
+    "doc": "pakistan-import-documents",
+    "doc_title": "Core documents for importing goods into Pakistan",
+    "section": "1. The usual paperwork",
+    "text": "A commercial import into Pakistan typically needs a commercial invoice, a packing list, a bill of lading or airway bill, and a goods declaration filed electronically. Agricultural and food consignments often also need a phytosanitary or health certificate from the exporting country and clearance from the relevant Pakistani authority."
+  },
+  {
+    "id": "pakistan-import-documents#s2",
+    "doc": "pakistan-import-documents",
+    "doc_title": "Core documents for importing goods into Pakistan",
+    "section": "2. Filing the declaration",
+    "text": "Declarations are filed through the Pakistan Single Window and the customs clearance system. The declarant selects the HS code, declares value and quantity, and pays the assessed duties and taxes before goods are released. Accurate HS codes and values are the declarant's responsibility."
+  },
+  {
+    "id": "pakistan-import-documents#s3",
+    "doc": "pakistan-import-documents",
+    "doc_title": "Core documents for importing goods into Pakistan",
+    "section": "3. Traders and agents",
+    "text": "Many importers use a clearing agent and a shipping agent to handle filing, port handling, and delivery. In trade records you will often see the buyer (importer), the seller (foreign supplier), and a shipping or clearing agent named separately. Exact document lists vary by commodity, so confirm requirements with the current Import Policy Order and the clearing agent."
+  },
+  {
+    "id": "pakistan-single-window-weboc#s1",
+    "doc": "pakistan-single-window-weboc",
+    "doc_title": "Pakistan Single Window and electronic clearance",
+    "section": "1. What the systems do",
+    "text": "Pakistan uses electronic systems for customs clearance. The Pakistan Single Window is a platform that lets traders submit regulatory documents for cross-border trade through one interface, connecting customs with other agencies. Goods declarations and duty payment are handled electronically rather than on paper."
+  },
+  {
+    "id": "pakistan-single-window-weboc#s2",
+    "doc": "pakistan-single-window-weboc",
+    "doc_title": "Pakistan Single Window and electronic clearance",
+    "section": "2. Why it exists",
+    "text": "A single electronic window reduces duplicate paperwork across agencies, speeds up clearance, and creates a data trail for each consignment. Agencies such as plant protection, food authorities, and standards bodies can attach their clearance to the same consignment record."
+  },
+  {
+    "id": "pakistan-single-window-weboc#s3",
+    "doc": "pakistan-single-window-weboc",
+    "doc_title": "Pakistan Single Window and electronic clearance",
+    "section": "3. For the trader",
+    "text": "The importer or their clearing agent files the declaration, uploads supporting documents, and tracks status online. Correct data entry, especially the HS code and value, is essential because the system routes checks and assessments based on what is declared."
+  },
+  {
+    "id": "phytosanitary-sps-basics#s1",
+    "doc": "phytosanitary-sps-basics",
+    "doc_title": "Phytosanitary certificates and SPS basics",
+    "section": "1. What SPS measures are",
+    "text": "Sanitary and phytosanitary (SPS) measures are rules that protect human, animal, and plant health. Under the WTO SPS framework, countries may set import conditions for food and agricultural goods as long as they are based on science and applied consistently. Plant products, in particular, can carry pests and diseases, so importing countries set entry conditions."
+  },
+  {
+    "id": "phytosanitary-sps-basics#s2",
+    "doc": "phytosanitary-sps-basics",
+    "doc_title": "Phytosanitary certificates and SPS basics",
+    "section": "2. The phytosanitary certificate",
+    "text": "A phytosanitary certificate is issued by the plant-protection authority of the exporting country. It states that the consignment was inspected and is considered free from regulated pests and meets the importing country's stated requirements. For plant-based agricultural imports into Pakistan, the Department of Plant Protection is the relevant authority on the import side."
+  },
+  {
+    "id": "phytosanitary-sps-basics#s3",
+    "doc": "phytosanitary-sps-basics",
+    "doc_title": "Phytosanitary certificates and SPS basics",
+    "section": "3. Practical effect",
+    "text": "If a required phytosanitary or health certificate is missing or invalid, a consignment can be held, treated, re-exported, or destroyed. Processed sugar products may face lighter plant-health scrutiny than raw plant material, but food-safety rules still apply. Always check the specific SPS conditions for the exact commodity and origin before shipping."
+  },
+  {
+    "id": "regulatory-additional-duty#s1",
+    "doc": "regulatory-additional-duty",
+    "doc_title": "Regulatory duty and additional customs duty",
+    "section": "1. What they are",
+    "text": "Beyond basic customs duty, Pakistan can apply a regulatory duty and an additional customs duty on selected imports. Regulatory duty is often used as a policy lever, for example to discourage imports of certain goods or to protect local industry, and it can be introduced or changed by notification."
+  },
+  {
+    "id": "regulatory-additional-duty#s2",
+    "doc": "regulatory-additional-duty",
+    "doc_title": "Regulatory duty and additional customs duty",
+    "section": "2. Why it matters for planning",
+    "text": "Because these duties are adjusted relatively often, the total landed cost of an import can move without any change in the basic tariff. An importer planning a shipment should check whether a regulatory duty or additional customs duty currently applies to the specific HS line."
+  },
+  {
+    "id": "regulatory-additional-duty#s3",
+    "doc": "regulatory-additional-duty",
+    "doc_title": "Regulatory duty and additional customs duty",
+    "section": "3. Not a fixed number",
+    "text": "This summary does not state any specific regulatory-duty percentage, because such rates change by notification. Confirm the current figure from the latest official schedule before pricing a deal."
+  },
+  {
+    "id": "sugar-hs-1701#s1",
+    "doc": "sugar-hs-1701",
+    "doc_title": "Cane and beet sugar (HS 1701)",
+    "section": "1. What sits in heading 1701",
+    "text": "HS heading 1701 covers cane or beet sugar and chemically pure sucrose in solid form. This includes raw sugar and refined white sugar. In this dataset, subheadings under 1701 include refined white crystalline cane sugar and chemically pure sucrose."
+  },
+  {
+    "id": "sugar-hs-1701#s2",
+    "doc": "sugar-hs-1701",
+    "doc_title": "Cane and beet sugar (HS 1701)",
+    "section": "2. Trade sensitivity",
+    "text": "Sugar is a politically sensitive commodity in Pakistan because it affects food prices and a large domestic milling industry. As a result, sugar trade can be subject to changing policy: import or export may be encouraged, restricted, or taxed differently at different times depending on the domestic supply situation. Treat any specific rate or ban as time-sensitive."
+  },
+  {
+    "id": "sugar-hs-1701#s3",
+    "doc": "sugar-hs-1701",
+    "doc_title": "Cane and beet sugar (HS 1701)",
+    "section": "3. Checking current status",
+    "text": "Because sugar policy changes with domestic supply, an importer or exporter should confirm the current status through the latest Import or Export Policy Order and any recent notifications before committing. This summary does not state a current duty rate or quota."
+  },
+  {
+    "id": "sugar-syrups-hs-1702#s1",
+    "doc": "sugar-syrups-hs-1702",
+    "doc_title": "Other sugars and syrups (HS 1702)",
+    "section": "1. What sits in heading 1702",
+    "text": "HS heading 1702 covers sugars other than the cane and beet sugar of 1701, plus sugar syrups. It includes glucose and glucose syrup, fructose and fructose syrup, lactose, maltose, maltodextrin, caramel, and invert sugar syrups. These are common food-industry inputs."
+  },
+  {
+    "id": "sugar-syrups-hs-1702#s2",
+    "doc": "sugar-syrups-hs-1702",
+    "doc_title": "Other sugars and syrups (HS 1702)",
+    "section": "2. Why industry imports these",
+    "text": "Products such as glucose syrup, high-fructose corn syrup, lactose, and maltodextrin are used by food, confectionery, dairy, and pharmaceutical manufacturers. They are often imported when local production does not cover industrial demand. In this dataset, lactose, dextrose, and glucose syrups are among the most frequently imported subcategories."
+  },
+  {
+    "id": "sugar-syrups-hs-1702#s3",
+    "doc": "sugar-syrups-hs-1702",
+    "doc_title": "Other sugars and syrups (HS 1702)",
+    "section": "3. Classification care",
+    "text": "Within 1702 the exact subheading depends on the sugar type and its composition, for example the fructose content of a syrup. Because duty and any regulatory conditions attach to the specific line, confirm the precise subheading for the actual product with the current tariff."
+  }
+]

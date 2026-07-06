@@ -1,0 +1,19 @@
+# Core service + agentic RAG stack. Pins verified installing on Python 3.12.
+fastapi==0.139.0
+uvicorn[standard]==0.50.2
+pydantic==2.13.4
+
+# Vertex AI: generation via the google-genai SDK, embeddings via the predict REST API.
+google-genai==2.10.0
+google-auth==2.55.1
+httpx==0.28.1
+
+# Vector store + data.
+numpy==2.5.1
+
+# Config + templating.
+python-dotenv==1.2.2
+jinja2==3.1.6
+
+# Tests.
+pytest==9.1.1

@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Intelligence Copilot</title>
+<style>
+  :root { --bg:#0f1720; --panel:#17212b; --line:#2a3846; --fg:#e6edf3; --mut:#8aa0b2; --acc:#4c9f70; --warn:#c9853b; }
+  * { box-sizing:border-box; }
+  body { margin:0; font:15px/1.5 system-ui,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--fg); }
+  header { padding:20px 24px; border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:19px; }
+  header p { margin:4px 0 0; color:var(--mut); font-size:13px; }
+  main { max-width:900px; margin:0 auto; padding:24px; }
+  .ask { display:flex; gap:10px; }
+  input[type=text] { flex:1; padding:12px 14px; border-radius:8px; border:1px solid var(--line); background:var(--panel); color:var(--fg); font-size:15px; }
+  button { padding:12px 20px; border:0; border-radius:8px; background:var(--acc); color:#fff; font-weight:600; cursor:pointer; }
+  button:disabled { opacity:.5; cursor:default; }
+  .examples { margin:12px 0 0; color:var(--mut); font-size:13px; }
+  .examples a { color:var(--acc); cursor:pointer; margin-right:14px; text-decoration:none; }
+  .card { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px 18px; margin-top:18px; }
+  .card h3 { margin:0 0 10px; font-size:13px; text-transform:uppercase; letter-spacing:.04em; color:var(--mut); }
+  .answer { font-size:16px; white-space:pre-wrap; }
+  .badge { display:inline-block; font-size:12px; padding:2px 8px; border-radius:20px; font-weight:600; }
+  .ok { background:rgba(76,159,112,.2); color:#7fd1a3; }
+  .no { background:rgba(201,133,59,.2); color:#e0a86a; }
+  pre { background:#0b1218; border:1px solid var(--line); border-radius:6px; padding:10px; overflow-x:auto; font-size:12.5px; margin:8px 0 0; }
+  .chunk { border-left:3px solid var(--acc); padding:6px 10px; margin:8px 0; background:#0b1218; border-radius:0 6px 6px 0; }
+  .chunk .src { color:var(--mut); font-size:12px; }
+  .metrics { display:flex; gap:20px; flex-wrap:wrap; color:var(--mut); font-size:13px; }
+  .metrics b { color:var(--fg); }
+  .step { margin:6px 0; padding:8px 10px; background:#0b1218; border-radius:6px; font-size:13px; }
+  .step .k { color:var(--acc); font-weight:600; text-transform:uppercase; font-size:11px; letter-spacing:.04em; }
+  .muted { color:var(--mut); }
+</style>
+</head>
+<body>
+<header>
+  <h1>Trade Intelligence Copilot</h1>
+  <p>Agentic RAG over Pakistani sugar-sector import data and trade-regulation explainers. Answers are grounded and cited, or refused.</p>
+</header>
+<main>
+  <div class="ask">
+    <input id="q" type="text" placeholder="Ask about imports, HS codes, or trade rules..." autofocus>
+    <button id="go">Ask</button>
+  </div>
+  <div class="examples">
+    Try:
+    <a data-q="Which country did Pakistan import the most sugar-sector goods from by value?">top source country</a>
+    <a data-q="What is a phytosanitary certificate and when is it needed?">phytosanitary rule</a>
+    <a data-q="What HS code covers glucose and glucose syrup?">HS lookup</a>
+    <a data-q="What were Pakistan's wheat exports to India in 2019?">out of scope (refusal)</a>
+  </div>
+  <div id="out"></div>
+</main>
+<script>
+const $ = s => document.querySelector(s);
+const out = $("#out");
+function esc(s){ return (s||"").replace(/[&<>]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c])); }
+
+async function ask(q){
+  $("#go").disabled = true;
+  out.innerHTML = '<p class="muted">Thinking...</p>';
+  try {
+    const res = await fetch("/ask", {method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({question:q})});
+    const d = await res.json();
+    render(d);
+  } catch(e){ out.innerHTML = '<p class="no">Error: '+esc(String(e))+'</p>'; }
+  $("#go").disabled = false;
+}
+
+function render(d){
+  const sup = d.supported ? '<span class="badge ok">grounded</span>' : '<span class="badge no">refused / unsupported</span>';
+  let h = '';
+  h += '<div class="card"><h3>Answer '+sup+'</h3><div class="answer">'+esc(d.answer)+'</div></div>';
+
+  // citations
+  let cites = '';
+  if (d.citations.sql){ cites += '<h3>SQL executed</h3><pre>'+esc(d.citations.sql)+'</pre>'; }
+  if (d.citations.sql_rows && d.citations.sql_rows.length){ cites += '<pre>'+esc(JSON.stringify(d.citations.sql_rows, null, 2))+'</pre>'; }
+  if (d.citations.hs_matches && d.citations.hs_matches.length){ cites += '<h3 style="margin-top:12px">HS-code lookup</h3><pre>'+esc(JSON.stringify(d.citations.hs_matches, null, 2))+'</pre>'; }
+  if (d.citations.chunks && d.citations.chunks.length){
+    cites += '<h3 style="margin-top:12px">Regulation sources</h3>';
+    d.citations.chunks.forEach(c=>{ cites += '<div class="chunk"><div class="src">['+esc(c.id)+'] '+esc(c.doc_title)+' :: '+esc(c.section)+'</div>'+esc(c.text)+'</div>'; });
+  }
+  if (cites) h += '<div class="card">'+cites+'</div>';
+
+  // trace
+  let tr = '';
+  d.trace.forEach(s=>{ tr += '<div class="step"><span class="k">'+esc(s.step)+'</span> '+esc(JSON.stringify(s.detail))+'</div>'; });
+  h += '<div class="card"><h3>Tool-call trace</h3>'+tr+'</div>';
+
+  // metrics
+  const c = d.cost;
+  h += '<div class="card"><h3>Cost &amp; latency</h3><div class="metrics">'
+     + '<div>tokens in <b>'+c.input_tokens+'</b></div>'
+     + '<div>tokens out <b>'+c.output_tokens+'</b></div>'
+     + '<div>cost <b>$'+c.cost_usd.toFixed(6)+'</b></div>'
+     + '<div>latency <b>'+d.latency_ms+' ms</b></div>'
+     + '<div>model calls <b>'+c.calls.length+'</b></div>'
+     + '</div></div>';
+  out.innerHTML = h;
+}
+
+$("#go").onclick = ()=>{ const q=$("#q").value.trim(); if(q) ask(q); };
+$("#q").addEventListener("keydown", e=>{ if(e.key==="Enter"){ const q=$("#q").value.trim(); if(q) ask(q); }});
+document.querySelectorAll(".examples a").forEach(a=>a.onclick=()=>{ $("#q").value=a.dataset.q; ask(a.dataset.q); });
+</script>
+</body>
+</html>

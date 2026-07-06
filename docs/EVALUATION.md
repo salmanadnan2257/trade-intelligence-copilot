@@ -1,0 +1,62 @@
+# Evaluation methodology
+
+The point of this project is the evaluation layer, so the method is written down and
+the numbers published are from one real run against the live Vertex AI API. The run
+is reproducible with `python -m eval.run_eval --run`; metrics can be recomputed from
+the saved transcripts with `python -m eval.run_eval --metrics`.
+
+## Test set
+
+`eval/testset.jsonl` has 28 hand-written items in four groups:
+
+- **SQL (12)**: factual questions whose gold answers were computed directly from
+  `data/trade.sqlite`, so they are ground truth (for example, total import value,
+  shipment counts, per-country totals). Gold is a number with a relative tolerance
+  (0 for integer counts, 1% for money to absorb rounding) or a required substring.
+- **Retrieval (7)**: questions whose answer lives in a specific regulation document.
+  Gold is the set of source documents that should be retrieved.
+- **Multi-step (3)**: questions needing SQL and retrieval together (a number plus the
+  rule that explains it). Scored on both the numeric answer and the retrieval hit.
+- **Unanswerable (6)**: questions about data outside the dataset scope (exports,
+  non-sugar commodities, other years). These must be refused.
+
+## Metrics
+
+- **SQL answer correctness**: the model's answer text is parsed for numbers; a hit
+  is any number within tolerance of gold, or the required substring being present.
+  This checks the whole pipeline (planner -> text-to-SQL -> execution -> synthesis),
+  not just whether a query ran.
+- **Retrieval hit rate**: fraction of retrieval/multi items where at least one
+  retrieved chunk came from a gold document.
+- **Refusal precision / recall**: a confusion matrix over all 28 items using
+  "refused" (answer not supported) versus "should refuse" (`expect_refusal`). Recall
+  is how many unanswerable questions were correctly refused; precision is how often a
+  refusal was warranted.
+- **LLM-as-judge faithfulness**: gemini-2.5-pro judges whether every factual claim in
+  an answer is supported by the evidence the answer was allowed to use. Judged only on
+  answered (non-refused) items.
+- **Judge validation**: the judge is itself checked. A subset of items is
+  hand-labelled by the author in `eval/human_labels.json` (faithful true/false), and
+  the harness reports judge-vs-human agreement. A judge you do not validate is not
+  evidence, so this number is reported alongside the faithfulness score.
+- **Cost and latency**: per-query token cost (Vertex list prices) and p50/p95 latency
+  are taken from the same run.
+
+## Honest limitations
+
+- The judge and the answerer are the same model family (Gemini). The human-label check
+  is there precisely because an LLM judging LLM output can share blind spots. Treat the
+  faithfulness number as calibrated only as far as the agreement number supports.
+- The test set is small (28 items) by design, to keep the paid run cheap. It is enough
+  to exercise every path but is not a statistically large benchmark.
+- SQL correctness is checked by number-matching in the answer text. A wrong answer that
+  happens to contain the right number would be scored correct; the multi-step and
+  faithfulness checks partly offset this.
+- The regulation corpus is authored explanatory summaries, not primary legal text, so
+  faithfulness measures grounding in that corpus, not legal accuracy.
+
+## Results
+
+See `eval/results.json` for the full machine-readable metrics and per-item outcomes,
+and the "Evaluation results" section of the top-level `README.md` for the headline
+numbers from the real run.

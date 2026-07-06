@@ -1,0 +1,10 @@
+[project]
+name = "trade-intelligence-copilot"
+version = "1.0.0"
+description = "Agentic RAG copilot over agricultural-trade data with a real evaluation layer."
+requires-python = ">=3.11"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+markers = ["live: test needs the live Vertex AI API"]

@@ -1,0 +1,264 @@
+{
+  "n_items": 28,
+  "sql_answer_correctness": {
+    "correct": 15,
+    "total": 15,
+    "accuracy": 1.0
+  },
+  "retrieval_hit_rate": {
+    "hits": 8,
+    "total": 10,
+    "rate": 0.8
+  },
+  "refusal": {
+    "tp": 6,
+    "fp": 0,
+    "tn": 22,
+    "fn": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  "faithfulness_llm_judge": {
+    "faithful": 19,
+    "total": 22,
+    "rate": 0.864,
+    "judge_model": "gemini-2.5-pro"
+  },
+  "judge_vs_human_agreement": {
+    "agree": 11,
+    "labelled": 12,
+    "agreement": 0.917
+  },
+  "cost": {
+    "total_usd": 0.027374,
+    "mean_per_query_usd": 0.000978
+  },
+  "latency_ms": {
+    "p50": 7086.0,
+    "p95": 9921.9,
+    "mean": 6655.2
+  },
+  "per_item": [
+    {
+      "id": "sql-01",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-02",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-03",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-04",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-05",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-06",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-07",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-08",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-09",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-10",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-11",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true
+    },
+    {
+      "id": "sql-12",
+      "type": "sql",
+      "refused": false,
+      "supported": true,
+      "faithful": false,
+      "sql_correct": true
+    },
+    {
+      "id": "ret-01",
+      "type": "retrieval",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "retrieval_hit": true
+    },
+    {
+      "id": "ret-02",
+      "type": "retrieval",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "retrieval_hit": true
+    },
+    {
+      "id": "ret-03",
+      "type": "retrieval",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "retrieval_hit": true
+    },
+    {
+      "id": "ret-04",
+      "type": "retrieval",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "retrieval_hit": true
+    },
+    {
+      "id": "ret-05",
+      "type": "retrieval",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "retrieval_hit": true
+    },
+    {
+      "id": "ret-06",
+      "type": "retrieval",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "retrieval_hit": true
+    },
+    {
+      "id": "ret-07",
+      "type": "retrieval",
+      "refused": false,
+      "supported": true,
+      "faithful": false,
+      "retrieval_hit": false
+    },
+    {
+      "id": "multi-01",
+      "type": "multi",
+      "refused": false,
+      "supported": true,
+      "faithful": false,
+      "sql_correct": true,
+      "retrieval_hit": false
+    },
+    {
+      "id": "multi-02",
+      "type": "multi",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true,
+      "retrieval_hit": true
+    },
+    {
+      "id": "multi-03",
+      "type": "multi",
+      "refused": false,
+      "supported": true,
+      "faithful": true,
+      "sql_correct": true,
+      "retrieval_hit": true
+    },
+    {
+      "id": "refuse-01",
+      "type": "refusal",
+      "refused": true,
+      "supported": false,
+      "faithful": true
+    },
+    {
+      "id": "refuse-02",
+      "type": "refusal",
+      "refused": true,
+      "supported": false,
+      "faithful": true
+    },
+    {
+      "id": "refuse-03",
+      "type": "refusal",
+      "refused": true,
+      "supported": false,
+      "faithful": true
+    },
+    {
+      "id": "refuse-04",
+      "type": "refusal",
+      "refused": true,
+      "supported": false,
+      "faithful": true
+    },
+    {
+      "id": "refuse-05",
+      "type": "refusal",
+      "refused": true,
+      "supported": false,
+      "faithful": true
+    },
+    {
+      "id": "refuse-06",
+      "type": "refusal",
+      "refused": true,
+      "supported": false,
+      "faithful": true
+    }
+  ]
+}
