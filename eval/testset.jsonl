@@ -1,0 +1,28 @@
+{"id": "sql-01", "type": "sql", "question": "What was the total USD value of all imports in the dataset?", "gold": {"value": 274995234.91, "rel_tol": 0.01}, "expect_refusal": false}
+{"id": "sql-02", "type": "sql", "question": "How many trade transactions are in the dataset in total?", "gold": {"value": 2000, "rel_tol": 0.0}, "expect_refusal": false}
+{"id": "sql-03", "type": "sql", "question": "How many import shipments came from China?", "gold": {"value": 208, "rel_tol": 0.0}, "expect_refusal": false}
+{"id": "sql-04", "type": "sql", "question": "Which country was the largest source of imports by total USD value?", "gold": {"contains": "Brazil"}, "expect_refusal": false}
+{"id": "sql-05", "type": "sql", "question": "What was the total imported quantity in kilograms across all shipments?", "gold": {"value": 480907649.0, "rel_tol": 0.01}, "expect_refusal": false}
+{"id": "sql-06", "type": "sql", "question": "How many distinct source countries appear in the import data?", "gold": {"value": 28, "rel_tol": 0.0}, "expect_refusal": false}
+{"id": "sql-07", "type": "sql", "question": "What was the total USD value of imports classified under HS heading 1704 (sugar confectionery)?", "gold": {"value": 11665069.33, "rel_tol": 0.01}, "expect_refusal": false}
+{"id": "sql-08", "type": "sql", "question": "How many shipments were classified under HS heading 1701?", "gold": {"value": 427, "rel_tol": 0.0}, "expect_refusal": false}
+{"id": "sql-09", "type": "sql", "question": "What was the total USD value of imports from Germany?", "gold": {"value": 2317042.1, "rel_tol": 0.01}, "expect_refusal": false}
+{"id": "sql-10", "type": "sql", "question": "How many shipments did Orvella Foods import?", "gold": {"value": 191, "rel_tol": 0.0}, "expect_refusal": false}
+{"id": "sql-11", "type": "sql", "question": "What was the total USD value of imports from China?", "gold": {"value": 11823777.45, "rel_tol": 0.01}, "expect_refusal": false}
+{"id": "sql-12", "type": "sql", "question": "How many shipments were recorded under HS code 1702.1100 (lactose)?", "gold": {"value": 227, "rel_tol": 0.0}, "expect_refusal": false}
+{"id": "ret-01", "type": "retrieval", "question": "What is a phytosanitary certificate and who issues it?", "gold_docs": ["phytosanitary-sps-basics"], "expect_refusal": false}
+{"id": "ret-02", "type": "retrieval", "question": "How is customs duty charged: what is the difference between ad valorem and specific duty?", "gold_docs": ["customs-duty-concepts"], "expect_refusal": false}
+{"id": "ret-03", "type": "retrieval", "question": "What documents are typically needed to import goods into Pakistan?", "gold_docs": ["pakistan-import-documents"], "expect_refusal": false}
+{"id": "ret-04", "type": "retrieval", "question": "What is a certificate of origin and how does it affect duty?", "gold_docs": ["certificate-of-origin-fta"], "expect_refusal": false}
+{"id": "ret-05", "type": "retrieval", "question": "What is an anti-dumping duty and how does it arise?", "gold_docs": ["anti-dumping-safeguard"], "expect_refusal": false}
+{"id": "ret-06", "type": "retrieval", "question": "What is the Pakistan Single Window and what does it do?", "gold_docs": ["pakistan-single-window-weboc"], "expect_refusal": false}
+{"id": "ret-07", "type": "retrieval", "question": "What does HS heading 1702 cover?", "gold_docs": ["sugar-syrups-hs-1702", "hs-codes-basics"], "expect_refusal": false}
+{"id": "multi-01", "type": "multi", "question": "What was the total USD value of HS 1704 confectionery imports, and what kind of products does HS heading 1704 cover?", "gold": {"value": 11665069.33, "rel_tol": 0.01}, "gold_docs": ["confectionery-hs-1704"], "expect_refusal": false}
+{"id": "multi-02", "type": "multi", "question": "How much sugar under HS 1701 was imported by value, and why is sugar trade treated as policy-sensitive in Pakistan?", "gold": {"value": 172641770.06, "rel_tol": 0.01}, "gold_docs": ["sugar-hs-1701"], "expect_refusal": false}
+{"id": "multi-03", "type": "multi", "question": "Which country was the top source of imports by value, and what is a certificate of origin that might affect the duty on its goods?", "gold": {"contains": "Brazil"}, "gold_docs": ["certificate-of-origin-fta"], "expect_refusal": false}
+{"id": "refuse-01", "type": "refusal", "question": "What were Pakistan's wheat exports to India in 2019?", "expect_refusal": true}
+{"id": "refuse-02", "type": "refusal", "question": "What was the total USD value of cotton imports in the dataset?", "expect_refusal": true}
+{"id": "refuse-03", "type": "refusal", "question": "How many shipments were exported to Dubai?", "expect_refusal": true}
+{"id": "refuse-04", "type": "refusal", "question": "How many rice imports were recorded during 2010?", "expect_refusal": true}
+{"id": "refuse-05", "type": "refusal", "question": "Which companies imported steel according to the data?", "expect_refusal": true}
+{"id": "refuse-06", "type": "refusal", "question": "What was the total value of molasses exports?", "expect_refusal": true}

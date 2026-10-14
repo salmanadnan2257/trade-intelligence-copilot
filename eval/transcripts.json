@@ -1,0 +1,2982 @@
+[
+  {
+    "item": {
+      "id": "sql-01",
+      "type": "sql",
+      "question": "What was the total USD value of all imports in the dataset?",
+      "gold": {
+        "value": 274995234.91,
+        "rel_tol": 0.01
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What was the total USD value of all imports in the dataset?",
+      "answer": "The total USD value of all imports in the dataset was 274,995,234.91.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Calculate the total USD value of all import shipments in the dataset.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a total value of imports, which can be calculated using the SQL tool on the transaction data."
+      },
+      "citations": {
+        "sql": "SELECT SUM(usd) FROM trade_transactions",
+        "sql_rows": [
+          {
+            "SUM(usd)": 274995234.91
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Calculate the total USD value of all import shipments in the dataset.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a total value of imports, which can be calculated using the SQL tool on the transaction data."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT SUM(usd) FROM trade_transactions",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "SUM(usd)": 274995234.91
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1685,
+        "output_tokens": 240,
+        "total_tokens": 1925,
+        "cost_usd": 0.0011055,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 589,
+            "output_tokens": 108,
+            "cost_usd": 0.0004467
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 818,
+            "output_tokens": 68,
+            "cost_usd": 0.0004154
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 278,
+            "output_tokens": 64,
+            "cost_usd": 0.0002434
+          }
+        ]
+      },
+      "latency_ms": 9873.4
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the total USD value as 274,995,234.91, which is the exact value returned by the SQL query in the evidence.",
+      "judge_cost_usd": 0.0008025
+    }
+  },
+  {
+    "item": {
+      "id": "sql-02",
+      "type": "sql",
+      "question": "How many trade transactions are in the dataset in total?",
+      "gold": {
+        "value": 2000,
+        "rel_tol": 0.0
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "How many trade transactions are in the dataset in total?",
+      "answer": "There are 2000 trade transactions in the dataset.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Count the total number of trade transactions in the dataset.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a total count of transactions, which can be directly obtained using the SQL tool from the transaction data."
+      },
+      "citations": {
+        "sql": "SELECT COUNT(*) FROM trade_transactions",
+        "sql_rows": [
+          {
+            "COUNT(*)": 2000
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Count the total number of trade transactions in the dataset.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a total count of transactions, which can be directly obtained using the SQL tool from the transaction data."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT COUNT(*) FROM trade_transactions",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "COUNT(*)": 2000
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1667,
+        "output_tokens": 189,
+        "total_tokens": 1856,
+        "cost_usd": 0.0009726,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 587,
+            "output_tokens": 107,
+            "cost_usd": 0.0004436
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 816,
+            "output_tokens": 32,
+            "cost_usd": 0.0003248
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 264,
+            "output_tokens": 50,
+            "cost_usd": 0.0002042
+          }
+        ]
+      },
+      "latency_ms": 8359.8
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the count of 2000, which is the exact number returned by the SQL query.",
+      "judge_cost_usd": 0.0006375
+    }
+  },
+  {
+    "item": {
+      "id": "sql-03",
+      "type": "sql",
+      "question": "How many import shipments came from China?",
+      "gold": {
+        "value": 208,
+        "rel_tol": 0.0
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "How many import shipments came from China?",
+      "answer": "There were 208 import shipments from China.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Count the number of import shipments where the origin country is China.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a count of import shipments from a specific country, which can be directly answered by querying the transaction data using the SQL tool."
+      },
+      "citations": {
+        "sql": "SELECT COUNT(*) FROM trade_transactions WHERE country LIKE '%China%'",
+        "sql_rows": [
+          {
+            "COUNT(*)": 208
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Count the number of import shipments where the origin country is China.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a count of import shipments from a specific country, which can be directly answered by querying the transaction data using the SQL tool."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT COUNT(*) FROM trade_transactions WHERE country LIKE '%China%'",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "COUNT(*)": 208
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1668,
+        "output_tokens": 196,
+        "total_tokens": 1864,
+        "cost_usd": 0.0009904,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 584,
+            "output_tokens": 114,
+            "cost_usd": 0.0004602
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 818,
+            "output_tokens": 34,
+            "cost_usd": 0.0003304
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 266,
+            "output_tokens": 48,
+            "cost_usd": 0.0001998
+          }
+        ]
+      },
+      "latency_ms": 8306.9
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the count (208) from the SQL result for transactions where the country is like 'China'.",
+      "judge_cost_usd": 0.0006475
+    }
+  },
+  {
+    "item": {
+      "id": "sql-04",
+      "type": "sql",
+      "question": "Which country was the largest source of imports by total USD value?",
+      "gold": {
+        "contains": "Brazil"
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "Which country was the largest source of imports by total USD value?",
+      "answer": "Brazil was the largest source of imports by total USD value.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Which country was the largest source of imports by total USD value?",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a ranking of countries by total import USD value, which requires aggregation and ordering of transactional data available in the SQL database."
+      },
+      "citations": {
+        "sql": "SELECT country FROM trade_transactions GROUP BY country ORDER BY SUM(usd) DESC LIMIT 1",
+        "sql_rows": [
+          {
+            "country": "Brazil"
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Which country was the largest source of imports by total USD value?",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a ranking of countries by total import USD value, which requires aggregation and ordering of transactional data available in the SQL database."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT country FROM trade_transactions GROUP BY country ORDER BY SUM(usd) DESC LIMIT 1",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "country": "Brazil"
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1682,
+        "output_tokens": 211,
+        "total_tokens": 1893,
+        "cost_usd": 0.0010321,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 589,
+            "output_tokens": 113,
+            "cost_usd": 0.0004592
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 818,
+            "output_tokens": 49,
+            "cost_usd": 0.0003679
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 275,
+            "output_tokens": 49,
+            "cost_usd": 0.000205
+          }
+        ]
+      },
+      "latency_ms": 8981.2
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly identifies 'Brazil' as the largest source, which is the single result returned by the SQL query designed to find the country with the highest sum of USD.",
+      "judge_cost_usd": 0.00073
+    }
+  },
+  {
+    "item": {
+      "id": "sql-05",
+      "type": "sql",
+      "question": "What was the total imported quantity in kilograms across all shipments?",
+      "gold": {
+        "value": 480907649.0,
+        "rel_tol": 0.01
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What was the total imported quantity in kilograms across all shipments?",
+      "answer": "The total imported quantity across all shipments was 480,907,649.0 kilograms.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Calculate the total imported quantity in kilograms across all shipments.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a total quantity from import transaction data, which is directly answerable using the SQL tool and is within the dataset's scope."
+      },
+      "citations": {
+        "sql": "SELECT SUM(qty_kg) FROM trade_transactions",
+        "sql_rows": [
+          {
+            "SUM(qty_kg)": 480907649.0
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Calculate the total imported quantity in kilograms across all shipments.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a total quantity from import transaction data, which is directly answerable using the SQL tool and is within the dataset's scope."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT SUM(qty_kg) FROM trade_transactions",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "SUM(qty_kg)": 480907649.0
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1684,
+        "output_tokens": 234,
+        "total_tokens": 1918,
+        "cost_usd": 0.0010902,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 588,
+            "output_tokens": 113,
+            "cost_usd": 0.0004589
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 816,
+            "output_tokens": 60,
+            "cost_usd": 0.0003948
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 280,
+            "output_tokens": 61,
+            "cost_usd": 0.0002365
+          }
+        ]
+      },
+      "latency_ms": 7577.8
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the total quantity, 480,907,649.0, which is the exact value returned by the SQL query.",
+      "judge_cost_usd": 0.00077125
+    }
+  },
+  {
+    "item": {
+      "id": "sql-06",
+      "type": "sql",
+      "question": "How many distinct source countries appear in the import data?",
+      "gold": {
+        "value": 28,
+        "rel_tol": 0.0
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "How many distinct source countries appear in the import data?",
+      "answer": "There are 28 distinct source countries in the import data.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Count the number of distinct source countries in the import data.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a count of distinct countries from the import transaction data, which is directly supported by the SQL tool and within the dataset's scope."
+      },
+      "citations": {
+        "sql": "SELECT COUNT(DISTINCT country) FROM trade_transactions",
+        "sql_rows": [
+          {
+            "COUNT(DISTINCT country)": 28
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Count the number of distinct source countries in the import data.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a count of distinct countries from the import transaction data, which is directly supported by the SQL tool and within the dataset's scope."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT COUNT(DISTINCT country) FROM trade_transactions",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "COUNT(DISTINCT country)": 28
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1674,
+        "output_tokens": 209,
+        "total_tokens": 1883,
+        "cost_usd": 0.0010247,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 587,
+            "output_tokens": 115,
+            "cost_usd": 0.0004636
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 817,
+            "output_tokens": 44,
+            "cost_usd": 0.0003551
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 270,
+            "output_tokens": 50,
+            "cost_usd": 0.000206
+          }
+        ]
+      },
+      "latency_ms": 10345.9
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer states there are 28 distinct source countries, which is the exact number returned by the SQL query `COUNT(DISTINCT country)`.",
+      "judge_cost_usd": 0.000705
+    }
+  },
+  {
+    "item": {
+      "id": "sql-07",
+      "type": "sql",
+      "question": "What was the total USD value of imports classified under HS heading 1704 (sugar confectionery)?",
+      "gold": {
+        "value": 11665069.33,
+        "rel_tol": 0.01
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What was the total USD value of imports classified under HS heading 1704 (sugar confectionery)?",
+      "answer": "The total USD value of imports classified under HS heading 1704 (sugar confectionery) was 11,665,069.33 USD.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Calculate the total USD value of imports for HS heading 1704.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a total USD value for a specific HS heading, which can be calculated using the SQL tool and is within the dataset's scope for sugar imports."
+      },
+      "citations": {
+        "sql": "SELECT SUM(usd) FROM trade_transactions WHERE hs_code LIKE '1704%'",
+        "sql_rows": [
+          {
+            "SUM(usd)": 11665069.33
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Calculate the total USD value of imports for HS heading 1704.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a total USD value for a specific HS heading, which can be calculated using the SQL tool and is within the dataset's scope for sugar imports."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT SUM(usd) FROM trade_transactions WHERE hs_code LIKE '1704%'",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "SUM(usd)": 11665069.33
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1714,
+        "output_tokens": 246,
+        "total_tokens": 1960,
+        "cost_usd": 0.0011292,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 597,
+            "output_tokens": 122,
+            "cost_usd": 0.0004841
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 821,
+            "output_tokens": 51,
+            "cost_usd": 0.0003738
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 296,
+            "output_tokens": 73,
+            "cost_usd": 0.0002713
+          }
+        ]
+      },
+      "latency_ms": 9256.0
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the total USD value from the SQL result for the specified HS code.",
+      "judge_cost_usd": 0.0006462499999999999
+    }
+  },
+  {
+    "item": {
+      "id": "sql-08",
+      "type": "sql",
+      "question": "How many shipments were classified under HS heading 1701?",
+      "gold": {
+        "value": 427,
+        "rel_tol": 0.0
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "How many shipments were classified under HS heading 1701?",
+      "answer": "There were 427 shipments classified under HS heading 1701.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Count the number of shipments where the HS heading is 1701.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a count of shipments based on an HS heading, which can be directly answered using the SQL tool as it falls within the dataset's scope of sugar import transactions."
+      },
+      "citations": {
+        "sql": "SELECT COUNT(*) FROM trade_transactions WHERE hs_code LIKE '1701%'",
+        "sql_rows": [
+          {
+            "COUNT(*)": 427
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Count the number of shipments where the HS heading is 1701.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a count of shipments based on an HS heading, which can be directly answered using the SQL tool as it falls within the dataset's scope of sugar import transactions."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT COUNT(*) FROM trade_transactions WHERE hs_code LIKE '1701%'",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "COUNT(*)": 427
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1688,
+        "output_tokens": 232,
+        "total_tokens": 1920,
+        "cost_usd": 0.0010864,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 590,
+            "output_tokens": 125,
+            "cost_usd": 0.0004895
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 821,
+            "output_tokens": 53,
+            "cost_usd": 0.0003788
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 277,
+            "output_tokens": 54,
+            "cost_usd": 0.0002181
+          }
+        ]
+      },
+      "latency_ms": 7329.0
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the number 427, which is the exact value returned by the SQL query for COUNT(*).",
+      "judge_cost_usd": 0.0006687500000000001
+    }
+  },
+  {
+    "item": {
+      "id": "sql-09",
+      "type": "sql",
+      "question": "What was the total USD value of imports from Germany?",
+      "gold": {
+        "value": 2317042.1,
+        "rel_tol": 0.01
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What was the total USD value of imports from Germany?",
+      "answer": "The total USD value of imports from Germany was 2317042.1.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Calculate the total USD value of imports from Germany.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a total value from a specific country, which can be calculated using the SQL tool on the import transaction data."
+      },
+      "citations": {
+        "sql": "SELECT SUM(usd) FROM trade_transactions WHERE country LIKE '%Germany%'",
+        "sql_rows": [
+          {
+            "SUM(usd)": 2317042.1
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Calculate the total USD value of imports from Germany.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a total value from a specific country, which can be calculated using the SQL tool on the import transaction data."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT SUM(usd) FROM trade_transactions WHERE country LIKE '%Germany%'",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "SUM(usd)": 2317042.1
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1681,
+        "output_tokens": 203,
+        "total_tokens": 1884,
+        "cost_usd": 0.0010118,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 587,
+            "output_tokens": 108,
+            "cost_usd": 0.0004461
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 815,
+            "output_tokens": 39,
+            "cost_usd": 0.000342
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 279,
+            "output_tokens": 56,
+            "cost_usd": 0.0002237
+          }
+        ]
+      },
+      "latency_ms": 8687.7
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the total value (2317042.1) which is the result of the SQL query for Germany.",
+      "judge_cost_usd": 0.0006950000000000001
+    }
+  },
+  {
+    "item": {
+      "id": "sql-10",
+      "type": "sql",
+      "question": "How many shipments did Orvella Foods import?",
+      "gold": {
+        "value": 191,
+        "rel_tol": 0.0
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "How many shipments did Orvella Foods import?",
+      "answer": "Orvella Foods imported 191 shipments.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Count the number of import shipments where the buyer is 'Orvella Foods'.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a count of shipments for a specific buyer, which can be answered using the SQL tool on the transaction data."
+      },
+      "citations": {
+        "sql": "SELECT COUNT(*) FROM trade_transactions WHERE buyer LIKE '%Orvella Foods%';",
+        "sql_rows": [
+          {
+            "COUNT(*)": 191
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Count the number of import shipments where the buyer is 'Orvella Foods'.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a count of shipments for a specific buyer, which can be answered using the SQL tool on the transaction data."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT COUNT(*) FROM trade_transactions WHERE buyer LIKE '%Orvella Foods%';",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "COUNT(*)": 191
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1678,
+        "output_tokens": 201,
+        "total_tokens": 1879,
+        "cost_usd": 0.0010059,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 586,
+            "output_tokens": 114,
+            "cost_usd": 0.0004608
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 821,
+            "output_tokens": 39,
+            "cost_usd": 0.0003438
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 271,
+            "output_tokens": 48,
+            "cost_usd": 0.0002013
+          }
+        ]
+      },
+      "latency_ms": 26969.4
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the number 191, which is the direct result of the SQL query counting the shipments for the specified buyer.",
+      "judge_cost_usd": 0.00068375
+    }
+  },
+  {
+    "item": {
+      "id": "sql-11",
+      "type": "sql",
+      "question": "What was the total USD value of imports from China?",
+      "gold": {
+        "value": 11823777.45,
+        "rel_tol": 0.01
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What was the total USD value of imports from China?",
+      "answer": "The total USD value of imports from China was 11,823,777.45.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "What was the total USD value of imports from China?",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a total value filtered by country, which can be answered using the SQL tool on the import transaction data."
+      },
+      "citations": {
+        "sql": "SELECT SUM(usd) FROM trade_transactions WHERE country LIKE '%China%'",
+        "sql_rows": [
+          {
+            "SUM(usd)": 11823777.45
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "What was the total USD value of imports from China?",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a total value filtered by country, which can be answered using the SQL tool on the import transaction data."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT SUM(usd) FROM trade_transactions WHERE country LIKE '%China%'",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "SUM(usd)": 11823777.45
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1684,
+        "output_tokens": 212,
+        "total_tokens": 1896,
+        "cost_usd": 0.0010352,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 587,
+            "output_tokens": 108,
+            "cost_usd": 0.0004461
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 816,
+            "output_tokens": 43,
+            "cost_usd": 0.0003523
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 281,
+            "output_tokens": 61,
+            "cost_usd": 0.0002368
+          }
+        ]
+      },
+      "latency_ms": 46078.6
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states the total USD value for China as returned by the SQL query.",
+      "judge_cost_usd": 0.0006025
+    }
+  },
+  {
+    "item": {
+      "id": "sql-12",
+      "type": "sql",
+      "question": "How many shipments were recorded under HS code 1702.1100 (lactose)?",
+      "gold": {
+        "value": 227,
+        "rel_tol": 0.0
+      },
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "How many shipments were recorded under HS code 1702.1100 (lactose)?",
+      "answer": "There were 227 shipments recorded under HS code 1702.1100 (lactose).",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Count the number of shipments for HS code 1702.1100.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a count of shipments for a specific HS code, which can be directly queried from the transaction data using SQL."
+      },
+      "citations": {
+        "sql": "SELECT COUNT(*) FROM trade_transactions WHERE hs_code = '1702.1100'",
+        "sql_rows": [
+          {
+            "COUNT(*)": 227
+          }
+        ],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Count the number of shipments for HS code 1702.1100.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a count of shipments for a specific HS code, which can be directly queried from the transaction data using SQL."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT COUNT(*) FROM trade_transactions WHERE hs_code = '1702.1100'",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "COUNT(*)": 227
+              }
+            ]
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1712,
+        "output_tokens": 225,
+        "total_tokens": 1937,
+        "cost_usd": 0.0010761,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 598,
+            "output_tokens": 117,
+            "cost_usd": 0.0004719
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 824,
+            "output_tokens": 45,
+            "cost_usd": 0.0003597
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 290,
+            "output_tokens": 63,
+            "cost_usd": 0.0002445
+          }
+        ]
+      },
+      "latency_ms": 9000.5
+    },
+    "judge": {
+      "faithful": false,
+      "reason": "The evidence supports the number of shipments (227) for the given HS code, but it does not provide the description '(lactose)' for that code. This description is an invented detail not found in the evidence.",
+      "judge_cost_usd": 0.000895
+    }
+  },
+  {
+    "item": {
+      "id": "ret-01",
+      "type": "retrieval",
+      "question": "What is a phytosanitary certificate and who issues it?",
+      "gold_docs": [
+        "phytosanitary-sps-basics"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What is a phytosanitary certificate and who issues it?",
+      "answer": "A phytosanitary certificate is a document issued by the plant-protection authority of the exporting country. It certifies that the consignment was inspected, is free from regulated pests, and meets the importing country's specified requirements. For plant-based agricultural imports into Pakistan, the Department of Plant Protection is the relevant authority on the import side.",
+      "supported": true,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": true,
+        "retrieval_query": "phytosanitary certificate definition and issuing authority",
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a definition and information about who issues a phytosanitary certificate, which falls under agricultural-trade regulation explainers and can be answered by the retrieval tool."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": [
+          {
+            "id": "phytosanitary-sps-basics#s2",
+            "doc_title": "Phytosanitary certificates and SPS basics",
+            "section": "2. The phytosanitary certificate",
+            "text": "A phytosanitary certificate is issued by the plant-protection authority of the exporting country. It states that the consignment was inspected and is considered free from regulated pests and meets the importing country's stated requirements. For plant-based agricultural imports into Pakistan, the Department of Plant Protection is the relevant authority on the import side."
+          },
+          {
+            "id": "phytosanitary-sps-basics#s1",
+            "doc_title": "Phytosanitary certificates and SPS basics",
+            "section": "1. What SPS measures are",
+            "text": "Sanitary and phytosanitary (SPS) measures are rules that protect human, animal, and plant health. Under the WTO SPS framework, countries may set import conditions for food and agricultural goods as long as they are based on science and applied consistently. Plant products, in particular, can carry pests and diseases, so importing countries set entry conditions."
+          }
+        ]
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": true,
+            "retrieval_query": "phytosanitary certificate definition and issuing authority",
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a definition and information about who issues a phytosanitary certificate, which falls under agricultural-trade regulation explainers and can be answered by the retrieval tool."
+          }
+        },
+        {
+          "step": "retrieval",
+          "detail": {
+            "query": "phytosanitary certificate definition and issuing authority",
+            "hits": [
+              {
+                "id": "phytosanitary-sps-basics#s2",
+                "section": "2. The phytosanitary certificate",
+                "score": 0.797
+              },
+              {
+                "id": "phytosanitary-sps-basics#s1",
+                "section": "1. What SPS measures are",
+                "score": 0.748
+              },
+              {
+                "id": "phytosanitary-sps-basics#s3",
+                "section": "3. Practical effect",
+                "score": 0.689
+              },
+              {
+                "id": "import-policy-order-restrictions#s2",
+                "section": "2. Conditional and prohibited goods",
+                "score": 0.579
+              }
+            ],
+            "kept": [
+              "phytosanitary-sps-basics#s2",
+              "phytosanitary-sps-basics#s1",
+              "phytosanitary-sps-basics#s3",
+              "import-policy-order-restrictions#s2"
+            ],
+            "min_score": 0.55
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1218,
+        "output_tokens": 256,
+        "total_tokens": 1474,
+        "cost_usd": 0.0010054,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 588,
+            "output_tokens": 117,
+            "cost_usd": 0.0004689
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 630,
+            "output_tokens": 139,
+            "cost_usd": 0.0005365
+          }
+        ]
+      },
+      "latency_ms": 14516.9
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "All claims in the answer are directly supported by the evidence. The answer accurately summarizes the definition of a phytosanitary certificate and the role of Pakistan's Department of Plant Protection as described in the text.",
+      "judge_cost_usd": 0.00104125
+    }
+  },
+  {
+    "item": {
+      "id": "ret-02",
+      "type": "retrieval",
+      "question": "How is customs duty charged: what is the difference between ad valorem and specific duty?",
+      "gold_docs": [
+        "customs-duty-concepts"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "How is customs duty charged: what is the difference between ad valorem and specific duty?",
+      "answer": "Customs duty is charged either ad valorem, specific, or a mix. Ad valorem duty is a percentage of the assessed value, while specific duty is an amount per unit of quantity, such as per kilogram or per metric tonne.",
+      "supported": true,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": true,
+        "retrieval_query": "difference between ad valorem and specific duty customs",
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for definitions and differences between types of customs duty, which is a conceptual topic covered by the retrieval tool."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": [
+          {
+            "id": "customs-duty-concepts#s1",
+            "doc_title": "Customs duty concepts: ad valorem, specific, and tariff lines",
+            "section": "1. How duty is charged",
+            "text": "Customs duty is charged either ad valorem (a percentage of the assessed value), specific (an amount per unit of quantity such as per kilogram or per metric tonne), or a mix. The rate attaches to the HS tariff line, so classification and valuation together decide the amount owed."
+          }
+        ]
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": true,
+            "retrieval_query": "difference between ad valorem and specific duty customs",
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for definitions and differences between types of customs duty, which is a conceptual topic covered by the retrieval tool."
+          }
+        },
+        {
+          "step": "retrieval",
+          "detail": {
+            "query": "difference between ad valorem and specific duty customs",
+            "hits": [
+              {
+                "id": "customs-duty-concepts#s1",
+                "section": "1. How duty is charged",
+                "score": 0.796
+              },
+              {
+                "id": "customs-duty-concepts#s2",
+                "section": "2. Customs value",
+                "score": 0.773
+              },
+              {
+                "id": "customs-duty-concepts#s3",
+                "section": "3. Layers of charges",
+                "score": 0.771
+              },
+              {
+                "id": "regulatory-additional-duty#s2",
+                "section": "2. Why it matters for planning",
+                "score": 0.688
+              }
+            ],
+            "kept": [
+              "customs-duty-concepts#s1",
+              "customs-duty-concepts#s2",
+              "customs-duty-concepts#s3",
+              "regulatory-additional-duty#s2"
+            ],
+            "min_score": 0.55
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1196,
+        "output_tokens": 204,
+        "total_tokens": 1400,
+        "cost_usd": 0.0008688,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 593,
+            "output_tokens": 105,
+            "cost_usd": 0.0004404
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 603,
+            "output_tokens": 99,
+            "cost_usd": 0.0004284
+          }
+        ]
+      },
+      "latency_ms": 9132.8
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer accurately restates the definitions of ad valorem and specific duty as provided in the evidence.",
+      "judge_cost_usd": 0.00062875
+    }
+  },
+  {
+    "item": {
+      "id": "ret-03",
+      "type": "retrieval",
+      "question": "What documents are typically needed to import goods into Pakistan?",
+      "gold_docs": [
+        "pakistan-import-documents"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What documents are typically needed to import goods into Pakistan?",
+      "answer": "Typically, importing goods into Pakistan requires a commercial invoice, a packing list, a bill of lading or airway bill, and an electronically filed goods declaration. For agricultural and food consignments, a phytosanitary or health certificate from the exporting country and clearance from the relevant Pakistani authority are also often needed.",
+      "supported": true,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": true,
+        "retrieval_query": "documents required for importing goods into Pakistan",
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks about import procedures and required documents, which can be answered by the retrieval tool that covers agricultural trade regulation explainers."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": [
+          {
+            "id": "pakistan-import-documents#s1",
+            "doc_title": "Core documents for importing goods into Pakistan",
+            "section": "1. The usual paperwork",
+            "text": "A commercial import into Pakistan typically needs a commercial invoice, a packing list, a bill of lading or airway bill, and a goods declaration filed electronically. Agricultural and food consignments often also need a phytosanitary or health certificate from the exporting country and clearance from the relevant Pakistani authority."
+          }
+        ]
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": true,
+            "retrieval_query": "documents required for importing goods into Pakistan",
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks about import procedures and required documents, which can be answered by the retrieval tool that covers agricultural trade regulation explainers."
+          }
+        },
+        {
+          "step": "retrieval",
+          "detail": {
+            "query": "documents required for importing goods into Pakistan",
+            "hits": [
+              {
+                "id": "pakistan-import-documents#s1",
+                "section": "1. The usual paperwork",
+                "score": 0.854
+              },
+              {
+                "id": "pakistan-import-documents#s2",
+                "section": "2. Filing the declaration",
+                "score": 0.811
+              },
+              {
+                "id": "pakistan-import-documents#s3",
+                "section": "3. Traders and agents",
+                "score": 0.787
+              },
+              {
+                "id": "import-policy-order-restrictions#s1",
+                "section": "1. The policy framework",
+                "score": 0.751
+              }
+            ],
+            "kept": [
+              "pakistan-import-documents#s1",
+              "pakistan-import-documents#s2",
+              "pakistan-import-documents#s3",
+              "import-policy-order-restrictions#s1"
+            ],
+            "min_score": 0.55
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1179,
+        "output_tokens": 219,
+        "total_tokens": 1398,
+        "cost_usd": 0.0009012,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 587,
+            "output_tokens": 106,
+            "cost_usd": 0.0004411
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 592,
+            "output_tokens": 113,
+            "cost_usd": 0.0004601
+          }
+        ]
+      },
+      "latency_ms": 8831.3
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer accurately lists the required documents for general imports and for agricultural/food consignments, with all claims directly supported by the evidence.",
+      "judge_cost_usd": 0.0007224999999999999
+    }
+  },
+  {
+    "item": {
+      "id": "ret-04",
+      "type": "retrieval",
+      "question": "What is a certificate of origin and how does it affect duty?",
+      "gold_docs": [
+        "certificate-of-origin-fta"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What is a certificate of origin and how does it affect duty?",
+      "answer": "A certificate of origin is a document that proves goods qualify under a trade agreement's origin rules, allowing an importer to claim preferential (lower) tariffs. If a certificate of origin is missing or incorrect, the preference is denied, and the full duty applies instead of a reduced or zero duty rate.",
+      "supported": true,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": true,
+        "retrieval_query": "certificate of origin and its effect on customs duty",
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a definition and its impact on duties, which requires searching the agricultural-trade regulation explainers."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": [
+          {
+            "id": "certificate-of-origin-fta#s1",
+            "doc_title": "Certificate of origin and preferential trade",
+            "section": "1. What origin means for duty",
+            "text": "The country of origin of goods can change the duty rate when a trade agreement offers preferential (lower) tariffs. To claim a preference, an importer usually presents a certificate of origin proving the goods qualify under the agreement's origin rules."
+          },
+          {
+            "id": "certificate-of-origin-fta#s3",
+            "doc_title": "Certificate of origin and preferential trade",
+            "section": "3. Getting it right",
+            "text": "A missing or incorrect certificate of origin means the preference is denied and full duty applies. Importers confirm both that an agreement covers the product and that the goods actually satisfy its origin rules before claiming a lower rate."
+          },
+          {
+            "id": "certificate-of-origin-fta#s2",
+            "doc_title": "Certificate of origin and preferential trade",
+            "section": "2. Free trade and preferential agreements",
+            "text": "Pakistan has preferential and free-trade arrangements with several partners. Goods that meet the origin rules of the relevant agreement can enter at reduced or zero duty, while goods from other origins pay the standard rate. The rules of origin, not just where a ship sailed from, decide eligibility."
+          }
+        ]
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": true,
+            "retrieval_query": "certificate of origin and its effect on customs duty",
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a definition and its impact on duties, which requires searching the agricultural-trade regulation explainers."
+          }
+        },
+        {
+          "step": "retrieval",
+          "detail": {
+            "query": "certificate of origin and its effect on customs duty",
+            "hits": [
+              {
+                "id": "certificate-of-origin-fta#s1",
+                "section": "1. What origin means for duty",
+                "score": 0.805
+              },
+              {
+                "id": "certificate-of-origin-fta#s3",
+                "section": "3. Getting it right",
+                "score": 0.802
+              },
+              {
+                "id": "certificate-of-origin-fta#s2",
+                "section": "2. Free trade and preferential agreements",
+                "score": 0.75
+              },
+              {
+                "id": "regulatory-additional-duty#s2",
+                "section": "2. Why it matters for planning",
+                "score": 0.713
+              }
+            ],
+            "kept": [
+              "certificate-of-origin-fta#s1",
+              "certificate-of-origin-fta#s3",
+              "certificate-of-origin-fta#s2",
+              "regulatory-additional-duty#s2"
+            ],
+            "min_score": 0.55
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1145,
+        "output_tokens": 247,
+        "total_tokens": 1392,
+        "cost_usd": 0.000961,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 589,
+            "output_tokens": 105,
+            "cost_usd": 0.0004392
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 556,
+            "output_tokens": 142,
+            "cost_usd": 0.0005218
+          }
+        ]
+      },
+      "latency_ms": 9056.6
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer's definition of a certificate of origin and the explanation of its effect on duty are both directly supported by the provided evidence.",
+      "judge_cost_usd": 0.00086875
+    }
+  },
+  {
+    "item": {
+      "id": "ret-05",
+      "type": "retrieval",
+      "question": "What is an anti-dumping duty and how does it arise?",
+      "gold_docs": [
+        "anti-dumping-safeguard"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What is an anti-dumping duty and how does it arise?",
+      "answer": "An anti-dumping duty is a trade-remedy measure that targets goods sold for export at less than their normal value, specifically when this injures a domestic industry. It arises following an investigation, triggered by a complaint from a domestic industry. If the investigation confirms dumping, a duty can be applied to specific products from specific origins for a defined period.",
+      "supported": true,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": true,
+        "retrieval_query": "what is anti-dumping duty and how does it arise",
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a definition and explanation of a trade concept, which falls under the purview of the retrieval tool for rules, procedures, and definitions."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": [
+          {
+            "id": "anti-dumping-safeguard#s2",
+            "doc_title": "Anti-dumping and safeguard duties",
+            "section": "2. How they arise",
+            "text": "These duties follow an investigation triggered by a complaint from a domestic industry. If the investigation confirms dumping or injurious import surge, a duty can be applied to specific products from specific origins for a defined period."
+          },
+          {
+            "id": "anti-dumping-safeguard#s1",
+            "doc_title": "Anti-dumping and safeguard duties",
+            "section": "1. Trade-remedy duties",
+            "text": "Separate from ordinary customs duty, a country can impose trade-remedy measures. An anti-dumping duty targets goods sold for export at less than their normal value where this injures a domestic industry. A safeguard measure is a temporary restraint used when a surge of imports threatens serious injury. In Pakistan these are handled by the national tariff authority."
+          }
+        ]
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": true,
+            "retrieval_query": "what is anti-dumping duty and how does it arise",
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a definition and explanation of a trade concept, which falls under the purview of the retrieval tool for rules, procedures, and definitions."
+          }
+        },
+        {
+          "step": "retrieval",
+          "detail": {
+            "query": "what is anti-dumping duty and how does it arise",
+            "hits": [
+              {
+                "id": "anti-dumping-safeguard#s2",
+                "section": "2. How they arise",
+                "score": 0.806
+              },
+              {
+                "id": "anti-dumping-safeguard#s3",
+                "section": "3. Effect on an importer",
+                "score": 0.771
+              },
+              {
+                "id": "anti-dumping-safeguard#s1",
+                "section": "1. Trade-remedy duties",
+                "score": 0.76
+              },
+              {
+                "id": "customs-duty-concepts#s1",
+                "section": "1. How duty is charged",
+                "score": 0.698
+              }
+            ],
+            "kept": [
+              "anti-dumping-safeguard#s2",
+              "anti-dumping-safeguard#s3",
+              "anti-dumping-safeguard#s1",
+              "customs-duty-concepts#s1"
+            ],
+            "min_score": 0.55
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1183,
+        "output_tokens": 258,
+        "total_tokens": 1441,
+        "cost_usd": 0.0009999,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 590,
+            "output_tokens": 115,
+            "cost_usd": 0.0004645
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 593,
+            "output_tokens": 143,
+            "cost_usd": 0.0005354
+          }
+        ]
+      },
+      "latency_ms": 8111.6
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly synthesizes the definition of an anti-dumping duty from one piece of evidence and the process by which it arises from the other. All claims in the answer are directly supported by the provided text.",
+      "judge_cost_usd": 0.00102875
+    }
+  },
+  {
+    "item": {
+      "id": "ret-06",
+      "type": "retrieval",
+      "question": "What is the Pakistan Single Window and what does it do?",
+      "gold_docs": [
+        "pakistan-single-window-weboc"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What is the Pakistan Single Window and what does it do?",
+      "answer": "The Pakistan Single Window is a platform that allows traders to submit regulatory documents for cross-border trade through a single interface, connecting customs with other agencies. It handles goods declarations and duty payments electronically, rather than on paper. Its purpose is to reduce duplicate paperwork across agencies, speed up clearance, and create a data trail for each consignment. Agencies like plant protection, food authorities, and standards bodies can attach their clearance to the same consignment record. Importers or their clearing agents use it to file declarations, upload supporting documents, and track status online.",
+      "supported": true,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": true,
+        "retrieval_query": "Pakistan Single Window",
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a definition and function of a trade-related system, which falls under the 'rules, procedures, definitions' category best handled by the retrieval tool."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": [
+          {
+            "id": "pakistan-single-window-weboc#s2",
+            "doc_title": "Pakistan Single Window and electronic clearance",
+            "section": "2. Why it exists",
+            "text": "A single electronic window reduces duplicate paperwork across agencies, speeds up clearance, and creates a data trail for each consignment. Agencies such as plant protection, food authorities, and standards bodies can attach their clearance to the same consignment record."
+          },
+          {
+            "id": "pakistan-single-window-weboc#s1",
+            "doc_title": "Pakistan Single Window and electronic clearance",
+            "section": "1. What the systems do",
+            "text": "Pakistan uses electronic systems for customs clearance. The Pakistan Single Window is a platform that lets traders submit regulatory documents for cross-border trade through one interface, connecting customs with other agencies. Goods declarations and duty payment are handled electronically rather than on paper."
+          },
+          {
+            "id": "pakistan-single-window-weboc#s3",
+            "doc_title": "Pakistan Single Window and electronic clearance",
+            "section": "3. For the trader",
+            "text": "The importer or their clearing agent files the declaration, uploads supporting documents, and tracks status online. Correct data entry, especially the HS code and value, is essential because the system routes checks and assessments based on what is declared."
+          },
+          {
+            "id": "pakistan-import-documents#s2",
+            "doc_title": "Core documents for importing goods into Pakistan",
+            "section": "2. Filing the declaration",
+            "text": "Declarations are filed through the Pakistan Single Window and the customs clearance system. The declarant selects the HS code, declares value and quantity, and pays the assessed duties and taxes before goods are released. Accurate HS codes and values are the declarant's responsibility."
+          }
+        ]
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": true,
+            "retrieval_query": "Pakistan Single Window",
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a definition and function of a trade-related system, which falls under the 'rules, procedures, definitions' category best handled by the retrieval tool."
+          }
+        },
+        {
+          "step": "retrieval",
+          "detail": {
+            "query": "Pakistan Single Window",
+            "hits": [
+              {
+                "id": "pakistan-single-window-weboc#s2",
+                "section": "2. Why it exists",
+                "score": 0.823
+              },
+              {
+                "id": "pakistan-single-window-weboc#s1",
+                "section": "1. What the systems do",
+                "score": 0.793
+              },
+              {
+                "id": "pakistan-single-window-weboc#s3",
+                "section": "3. For the trader",
+                "score": 0.784
+              },
+              {
+                "id": "pakistan-import-documents#s2",
+                "section": "2. Filing the declaration",
+                "score": 0.663
+              }
+            ],
+            "kept": [
+              "pakistan-single-window-weboc#s2",
+              "pakistan-single-window-weboc#s1",
+              "pakistan-single-window-weboc#s3",
+              "pakistan-import-documents#s2"
+            ],
+            "min_score": 0.55
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1145,
+        "output_tokens": 320,
+        "total_tokens": 1465,
+        "cost_usd": 0.0011435,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 588,
+            "output_tokens": 110,
+            "cost_usd": 0.0004514
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 557,
+            "output_tokens": 210,
+            "cost_usd": 0.0006921
+          }
+        ]
+      },
+      "latency_ms": 9606.9
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "All claims in the answer are directly supported by the provided evidence.",
+      "judge_cost_usd": 0.00087
+    }
+  },
+  {
+    "item": {
+      "id": "ret-07",
+      "type": "retrieval",
+      "question": "What does HS heading 1702 cover?",
+      "gold_docs": [
+        "sugar-syrups-hs-1702",
+        "hs-codes-basics"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What does HS heading 1702 cover?",
+      "answer": "HS heading 1702 covers \"Other sugars and sugar syrups\".",
+      "supported": true,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": "1702",
+        "in_scope": true,
+        "rationale": "The question asks for the coverage of a specific HS heading, which can be directly answered using the hs_lookup tool."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [
+          {
+            "product_hs": "1702",
+            "product": "Other sugars and sugar syrups",
+            "category_hs": "1702.11",
+            "category": "Lactose",
+            "subcategory_hs": "1702.1100",
+            "subcategory": "Lactose, 99% or more"
+          },
+          {
+            "product_hs": "1702",
+            "product": "Other sugars and sugar syrups",
+            "category_hs": "1702.30",
+            "category": "Glucose and glucose syrup",
+            "subcategory_hs": "1702.3010",
+            "subcategory": "Dextrose monohydrate"
+          },
+          {
+            "product_hs": "1702",
+            "product": "Other sugars and sugar syrups",
+            "category_hs": "1702.30",
+            "category": "Glucose and glucose syrup",
+            "subcategory_hs": "1702.3020",
+            "subcategory": "Dextrose anhydrous"
+          },
+          {
+            "product_hs": "1702",
+            "product": "Other sugars and sugar syrups",
+            "category_hs": "1702.30",
+            "category": "Glucose and glucose syrup",
+            "subcategory_hs": "1702.3030",
+            "subcategory": "Liquid glucose"
+          },
+          {
+            "product_hs": "1702",
+            "product": "Other sugars and sugar syrups",
+            "category_hs": "1702.60",
+            "category": "Fructose and fructose syrup",
+            "subcategory_hs": "1702.6000",
+            "subcategory": "High-fructose syrup"
+          },
+          {
+            "product_hs": "1702",
+            "product": "Other sugars and sugar syrups",
+            "category_hs": "1702.90",
+            "category": "Other sugars",
+            "subcategory_hs": "1702.9010",
+            "subcategory": "Maltodextrin"
+          },
+          {
+            "product_hs": "1702",
+            "product": "Other sugars and sugar syrups",
+            "category_hs": "1702.90",
+            "category": "Other sugars",
+            "subcategory_hs": "1702.9020",
+            "subcategory": "Caramel colour"
+          },
+          {
+            "product_hs": "1702",
+            "product": "Other sugars and sugar syrups",
+            "category_hs": "1702.90",
+            "category": "Other sugars",
+            "subcategory_hs": "1702.9030",
+            "subcategory": "Invert sugar syrup"
+          }
+        ],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": "1702",
+            "in_scope": true,
+            "rationale": "The question asks for the coverage of a specific HS heading, which can be directly answered using the hs_lookup tool."
+          }
+        },
+        {
+          "step": "hs_lookup",
+          "detail": {
+            "term": "1702",
+            "match_count": 8
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 1380,
+        "output_tokens": 154,
+        "total_tokens": 1534,
+        "cost_usd": 0.000799,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 587,
+            "output_tokens": 101,
+            "cost_usd": 0.0004286
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 793,
+            "output_tokens": 53,
+            "cost_usd": 0.0003704
+          }
+        ]
+      },
+      "latency_ms": 30312.2
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The evidence consistently lists the 'product' for 'product_hs' 1702 as 'Other sugars and sugar syrups', which is exactly what the answer states.",
+      "judge_cost_usd": 0.0013562499999999998
+    }
+  },
+  {
+    "item": {
+      "id": "multi-01",
+      "type": "multi",
+      "question": "What was the total USD value of HS 1704 confectionery imports, and what kind of products does HS heading 1704 cover?",
+      "gold": {
+        "value": 11665069.33,
+        "rel_tol": 0.01
+      },
+      "gold_docs": [
+        "confectionery-hs-1704"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "What was the total USD value of HS 1704 confectionery imports, and what kind of products does HS heading 1704 cover?",
+      "answer": "The total USD value of HS 1704 confectionery imports was 11,665,069.33. HS heading 1704 covers \"Sugar confectionery, without cocoa,\" which includes products such as chewing gum, hard-boiled candy, jelly and gummy sweets, toffees and caramels, and white chocolate.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Calculate the total USD value of imports for HS heading 1704.",
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": "1704",
+        "in_scope": true,
+        "rationale": "The question asks for a total value from transaction data, requiring SQL, and a description of an HS code, requiring hs_lookup. Both aspects are within the dataset's scope."
+      },
+      "citations": {
+        "sql": "SELECT SUM(usd) FROM trade_transactions WHERE hs_code LIKE '1704%'",
+        "sql_rows": [
+          {
+            "SUM(usd)": 11665069.33
+          }
+        ],
+        "hs_matches": [
+          {
+            "product_hs": "1704",
+            "product": "Sugar confectionery, without cocoa",
+            "category_hs": "1704.10",
+            "category": "Chewing gum",
+            "subcategory_hs": "1704.1000",
+            "subcategory": "Chewing gum, sugar-coated or not"
+          },
+          {
+            "product_hs": "1704",
+            "product": "Sugar confectionery, without cocoa",
+            "category_hs": "1704.90",
+            "category": "Other sugar confectionery",
+            "subcategory_hs": "1704.9010",
+            "subcategory": "Hard-boiled candy"
+          },
+          {
+            "product_hs": "1704",
+            "product": "Sugar confectionery, without cocoa",
+            "category_hs": "1704.90",
+            "category": "Other sugar confectionery",
+            "subcategory_hs": "1704.9020",
+            "subcategory": "Jelly and gummy sweets"
+          },
+          {
+            "product_hs": "1704",
+            "product": "Sugar confectionery, without cocoa",
+            "category_hs": "1704.90",
+            "category": "Other sugar confectionery",
+            "subcategory_hs": "1704.9030",
+            "subcategory": "Toffees and caramels"
+          },
+          {
+            "product_hs": "1704",
+            "product": "Sugar confectionery, without cocoa",
+            "category_hs": "1704.90",
+            "category": "Other sugar confectionery",
+            "subcategory_hs": "1704.9040",
+            "subcategory": "White chocolate"
+          }
+        ],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Calculate the total USD value of imports for HS heading 1704.",
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": "1704",
+            "in_scope": true,
+            "rationale": "The question asks for a total value from transaction data, requiring SQL, and a description of an HS code, requiring hs_lookup. Both aspects are within the dataset's scope."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT SUM(usd) FROM trade_transactions WHERE hs_code LIKE '1704%'",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "SUM(usd)": 11665069.33
+              }
+            ]
+          }
+        },
+        {
+          "step": "hs_lookup",
+          "detail": {
+            "term": "1704",
+            "match_count": 5
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 2088,
+        "output_tokens": 309,
+        "total_tokens": 2397,
+        "cost_usd": 0.0013989,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 607,
+            "output_tokens": 129,
+            "cost_usd": 0.0005046
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 821,
+            "output_tokens": 70,
+            "cost_usd": 0.0004213
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 660,
+            "output_tokens": 110,
+            "cost_usd": 0.000473
+          }
+        ]
+      },
+      "latency_ms": 10171.1
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "All claims, including the total value and the list of products, are directly supported by the SQL result and the HS lookup data.",
+      "judge_cost_usd": 0.001225
+    }
+  },
+  {
+    "item": {
+      "id": "multi-02",
+      "type": "multi",
+      "question": "How much sugar under HS 1701 was imported by value, and why is sugar trade treated as policy-sensitive in Pakistan?",
+      "gold": {
+        "value": 172641770.06,
+        "rel_tol": 0.01
+      },
+      "gold_docs": [
+        "sugar-hs-1701"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "How much sugar under HS 1701 was imported by value, and why is sugar trade treated as policy-sensitive in Pakistan?",
+      "answer": "Sugar under HS 1701 was imported with a total value of 172,641,770.06 USD. Sugar trade is treated as policy-sensitive in Pakistan because it impacts food prices and supports a significant domestic milling industry.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "What is the total import value for HS code 1701?",
+        "retrieval_needed": true,
+        "retrieval_query": "why is sugar trade policy-sensitive in Pakistan",
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a specific import value by HS code, which requires the SQL tool, and also asks for an explanation of policy sensitivity, which requires the retrieval tool."
+      },
+      "citations": {
+        "sql": "SELECT SUM(usd) FROM trade_transactions WHERE hs_code LIKE '1701%'",
+        "sql_rows": [
+          {
+            "SUM(usd)": 172641770.06
+          }
+        ],
+        "hs_matches": [],
+        "chunks": [
+          {
+            "id": "sugar-hs-1701#s2",
+            "doc_title": "Cane and beet sugar (HS 1701)",
+            "section": "2. Trade sensitivity",
+            "text": "Sugar is a politically sensitive commodity in Pakistan because it affects food prices and a large domestic milling industry. As a result, sugar trade can be subject to changing policy: import or export may be encouraged, restricted, or taxed differently at different times depending on the domestic supply situation. Treat any specific rate or ban as time-sensitive."
+          }
+        ]
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "What is the total import value for HS code 1701?",
+            "retrieval_needed": true,
+            "retrieval_query": "why is sugar trade policy-sensitive in Pakistan",
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a specific import value by HS code, which requires the SQL tool, and also asks for an explanation of policy sensitivity, which requires the retrieval tool."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT SUM(usd) FROM trade_transactions WHERE hs_code LIKE '1701%'",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "SUM(usd)": 172641770.06
+              }
+            ]
+          }
+        },
+        {
+          "step": "retrieval",
+          "detail": {
+            "query": "why is sugar trade policy-sensitive in Pakistan",
+            "hits": [
+              {
+                "id": "sugar-hs-1701#s2",
+                "section": "2. Trade sensitivity",
+                "score": 0.793
+              },
+              {
+                "id": "sugar-hs-1701#s3",
+                "section": "3. Checking current status",
+                "score": 0.666
+              },
+              {
+                "id": "phytosanitary-sps-basics#s3",
+                "section": "3. Practical effect",
+                "score": 0.66
+              },
+              {
+                "id": "molasses-hs-1703#s2",
+                "section": "2. Trade notes",
+                "score": 0.658
+              }
+            ],
+            "kept": [
+              "sugar-hs-1701#s2",
+              "sugar-hs-1701#s3",
+              "phytosanitary-sps-basics#s3",
+              "molasses-hs-1703#s2"
+            ],
+            "min_score": 0.55
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 2107,
+        "output_tokens": 293,
+        "total_tokens": 2400,
+        "cost_usd": 0.0013646,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 604,
+            "output_tokens": 130,
+            "cost_usd": 0.0005062
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 820,
+            "output_tokens": 53,
+            "cost_usd": 0.0003785
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 683,
+            "output_tokens": 110,
+            "cost_usd": 0.0004799
+          }
+        ]
+      },
+      "latency_ms": 13309.1
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The value of sugar imports is directly from the SQL result. The reason for sugar being policy-sensitive is a direct paraphrase of the provided text snippet.",
+      "judge_cost_usd": 0.0008799999999999999
+    }
+  },
+  {
+    "item": {
+      "id": "multi-03",
+      "type": "multi",
+      "question": "Which country was the top source of imports by value, and what is a certificate of origin that might affect the duty on its goods?",
+      "gold": {
+        "contains": "Brazil"
+      },
+      "gold_docs": [
+        "certificate-of-origin-fta"
+      ],
+      "expect_refusal": false
+    },
+    "result": {
+      "question": "Which country was the top source of imports by value, and what is a certificate of origin that might affect the duty on its goods?",
+      "answer": "Brazil was the top source of imports by value. A certificate of origin is a document presented by an importer to prove that goods qualify under a trade agreement's origin rules, which can allow for preferential (lower or zero) tariffs. If this certificate is missing or incorrect, the preference is denied, and the full duty applies.",
+      "supported": true,
+      "plan": {
+        "sql_needed": true,
+        "sql_question": "Which country was the top source of imports by value?",
+        "retrieval_needed": true,
+        "retrieval_query": "certificate of origin and customs duty",
+        "hs_lookup": null,
+        "in_scope": true,
+        "rationale": "The question asks for a ranking of import sources by value, which requires the SQL tool, and also asks for an explanation of a trade regulation (certificate of origin and duty), which requires the retrieval tool."
+      },
+      "citations": {
+        "sql": "SELECT country FROM trade_transactions GROUP BY country ORDER BY SUM(usd) DESC LIMIT 1",
+        "sql_rows": [
+          {
+            "country": "Brazil"
+          }
+        ],
+        "hs_matches": [],
+        "chunks": [
+          {
+            "id": "certificate-of-origin-fta#s3",
+            "doc_title": "Certificate of origin and preferential trade",
+            "section": "3. Getting it right",
+            "text": "A missing or incorrect certificate of origin means the preference is denied and full duty applies. Importers confirm both that an agreement covers the product and that the goods actually satisfy its origin rules before claiming a lower rate."
+          },
+          {
+            "id": "certificate-of-origin-fta#s1",
+            "doc_title": "Certificate of origin and preferential trade",
+            "section": "1. What origin means for duty",
+            "text": "The country of origin of goods can change the duty rate when a trade agreement offers preferential (lower) tariffs. To claim a preference, an importer usually presents a certificate of origin proving the goods qualify under the agreement's origin rules."
+          },
+          {
+            "id": "certificate-of-origin-fta#s2",
+            "doc_title": "Certificate of origin and preferential trade",
+            "section": "2. Free trade and preferential agreements",
+            "text": "Pakistan has preferential and free-trade arrangements with several partners. Goods that meet the origin rules of the relevant agreement can enter at reduced or zero duty, while goods from other origins pay the standard rate. The rules of origin, not just where a ship sailed from, decide eligibility."
+          }
+        ]
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": true,
+            "sql_question": "Which country was the top source of imports by value?",
+            "retrieval_needed": true,
+            "retrieval_query": "certificate of origin and customs duty",
+            "hs_lookup": null,
+            "in_scope": true,
+            "rationale": "The question asks for a ranking of import sources by value, which requires the SQL tool, and also asks for an explanation of a trade regulation (certificate of origin and duty), which requires the retrieval tool."
+          }
+        },
+        {
+          "step": "sql",
+          "detail": {
+            "sql": "SELECT country FROM trade_transactions GROUP BY country ORDER BY SUM(usd) DESC LIMIT 1",
+            "error": null,
+            "row_count": 1,
+            "rows_preview": [
+              {
+                "country": "Brazil"
+              }
+            ]
+          }
+        },
+        {
+          "step": "retrieval",
+          "detail": {
+            "query": "certificate of origin and customs duty",
+            "hits": [
+              {
+                "id": "certificate-of-origin-fta#s3",
+                "section": "3. Getting it right",
+                "score": 0.795
+              },
+              {
+                "id": "certificate-of-origin-fta#s1",
+                "section": "1. What origin means for duty",
+                "score": 0.79
+              },
+              {
+                "id": "certificate-of-origin-fta#s2",
+                "section": "2. Free trade and preferential agreements",
+                "score": 0.744
+              },
+              {
+                "id": "regulatory-additional-duty#s2",
+                "section": "2. Why it matters for planning",
+                "score": 0.72
+              }
+            ],
+            "kept": [
+              "certificate-of-origin-fta#s3",
+              "certificate-of-origin-fta#s1",
+              "certificate-of-origin-fta#s2",
+              "regulatory-additional-duty#s2"
+            ],
+            "min_score": 0.55
+          }
+        },
+        {
+          "step": "synthesize",
+          "detail": {
+            "supported": true
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 2028,
+        "output_tokens": 328,
+        "total_tokens": 2356,
+        "cost_usd": 0.0014284,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 603,
+            "output_tokens": 130,
+            "cost_usd": 0.0005059
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 816,
+            "output_tokens": 50,
+            "cost_usd": 0.0003698
+          },
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 609,
+            "output_tokens": 148,
+            "cost_usd": 0.0005527
+          }
+        ]
+      },
+      "latency_ms": 12504.6
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "All claims in the answer are directly supported by the provided SQL result and text snippets.",
+      "judge_cost_usd": 0.0008349999999999999
+    }
+  },
+  {
+    "item": {
+      "id": "refuse-01",
+      "type": "refusal",
+      "question": "What were Pakistan's wheat exports to India in 2019?",
+      "expect_refusal": true
+    },
+    "result": {
+      "question": "What were Pakistan's wheat exports to India in 2019?",
+      "answer": "This question is not supported by the available data.",
+      "supported": false,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": false,
+        "rationale": "The dataset only contains import data for sugar products in 2025, not wheat exports to India in 2019."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": false,
+            "rationale": "The dataset only contains import data for sugar products in 2025, not wheat exports to India in 2019."
+          }
+        },
+        {
+          "step": "refusal",
+          "detail": {
+            "reason": "no supporting evidence"
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 592,
+        "output_tokens": 101,
+        "total_tokens": 693,
+        "cost_usd": 0.0004301,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 592,
+            "output_tokens": 101,
+            "cost_usd": 0.0004301
+          }
+        ]
+      },
+      "latency_ms": 3155.1
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states that the question cannot be answered from the provided data, as no evidence was given.",
+      "judge_cost_usd": 0.0005874999999999999
+    }
+  },
+  {
+    "item": {
+      "id": "refuse-02",
+      "type": "refusal",
+      "question": "What was the total USD value of cotton imports in the dataset?",
+      "expect_refusal": true
+    },
+    "result": {
+      "question": "What was the total USD value of cotton imports in the dataset?",
+      "answer": "This question is not supported by the available data.",
+      "supported": false,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": false,
+        "rationale": "The dataset only contains information on sugar and sugar products (HS Chapter 17) and does not include data for cotton imports."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": false,
+            "rationale": "The dataset only contains information on sugar and sugar products (HS Chapter 17) and does not include data for cotton imports."
+          }
+        },
+        {
+          "step": "refusal",
+          "detail": {
+            "reason": "no supporting evidence"
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 589,
+        "output_tokens": 99,
+        "total_tokens": 688,
+        "cost_usd": 0.0004242,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 589,
+            "output_tokens": 99,
+            "cost_usd": 0.0004242
+          }
+        ]
+      },
+      "latency_ms": 2710.3
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states that the question cannot be answered, as no evidence was provided to support any answer.",
+      "judge_cost_usd": 0.00052375
+    }
+  },
+  {
+    "item": {
+      "id": "refuse-03",
+      "type": "refusal",
+      "question": "How many shipments were exported to Dubai?",
+      "expect_refusal": true
+    },
+    "result": {
+      "question": "How many shipments were exported to Dubai?",
+      "answer": "This question is not supported by the available data.",
+      "supported": false,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": false,
+        "rationale": "The dataset only contains import shipments, not exports, so this question is outside the scope of the available data."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": false,
+            "rationale": "The dataset only contains import shipments, not exports, so this question is outside the scope of the available data."
+          }
+        },
+        {
+          "step": "refusal",
+          "detail": {
+            "reason": "no supporting evidence"
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 584,
+        "output_tokens": 95,
+        "total_tokens": 679,
+        "cost_usd": 0.0004127,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 584,
+            "output_tokens": 95,
+            "cost_usd": 0.0004127
+          }
+        ]
+      },
+      "latency_ms": 2718.4
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly refuses to answer the question as there is no evidence provided to support it.",
+      "judge_cost_usd": 0.0005475
+    }
+  },
+  {
+    "item": {
+      "id": "refuse-04",
+      "type": "refusal",
+      "question": "How many rice imports were recorded during 2010?",
+      "expect_refusal": true
+    },
+    "result": {
+      "question": "How many rice imports were recorded during 2010?",
+      "answer": "This question is not supported by the available data.",
+      "supported": false,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": false,
+        "rationale": "The dataset only contains sugar and sugar products (HS chapter 17) for the year 2025, so it does not cover rice imports or data from 2010."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": false,
+            "rationale": "The dataset only contains sugar and sugar products (HS chapter 17) for the year 2025, so it does not cover rice imports or data from 2010."
+          }
+        },
+        {
+          "step": "refusal",
+          "detail": {
+            "reason": "no supporting evidence"
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 589,
+        "output_tokens": 113,
+        "total_tokens": 702,
+        "cost_usd": 0.0004592,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 589,
+            "output_tokens": 113,
+            "cost_usd": 0.0004592
+          }
+        ]
+      },
+      "latency_ms": 3021.9
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly states that the question cannot be answered, as no evidence was provided. This is a faithful refusal.",
+      "judge_cost_usd": 0.00060375
+    }
+  },
+  {
+    "item": {
+      "id": "refuse-05",
+      "type": "refusal",
+      "question": "Which companies imported steel according to the data?",
+      "expect_refusal": true
+    },
+    "result": {
+      "question": "Which companies imported steel according to the data?",
+      "answer": "This question is not supported by the available data.",
+      "supported": false,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": false,
+        "rationale": "The dataset only contains information on sugar and sugar product imports (HS Chapter 17), not steel or other commodities."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": false,
+            "rationale": "The dataset only contains information on sugar and sugar product imports (HS Chapter 17), not steel or other commodities."
+          }
+        },
+        {
+          "step": "refusal",
+          "detail": {
+            "reason": "no supporting evidence"
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 585,
+        "output_tokens": 97,
+        "total_tokens": 682,
+        "cost_usd": 0.000418,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 585,
+            "output_tokens": 97,
+            "cost_usd": 0.000418
+          }
+        ]
+      },
+      "latency_ms": 2770.6
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly refuses to answer the question, as no evidence was provided to support any claims.",
+      "judge_cost_usd": 0.00055875
+    }
+  },
+  {
+    "item": {
+      "id": "refuse-06",
+      "type": "refusal",
+      "question": "What was the total value of molasses exports?",
+      "expect_refusal": true
+    },
+    "result": {
+      "question": "What was the total value of molasses exports?",
+      "answer": "This question is not supported by the available data.",
+      "supported": false,
+      "plan": {
+        "sql_needed": false,
+        "sql_question": null,
+        "retrieval_needed": false,
+        "retrieval_query": null,
+        "hs_lookup": null,
+        "in_scope": false,
+        "rationale": "The dataset only contains import transactions, not exports, so molasses exports cannot be queried."
+      },
+      "citations": {
+        "sql": null,
+        "sql_rows": [],
+        "hs_matches": [],
+        "chunks": []
+      },
+      "trace": [
+        {
+          "step": "plan",
+          "detail": {
+            "sql_needed": false,
+            "sql_question": null,
+            "retrieval_needed": false,
+            "retrieval_query": null,
+            "hs_lookup": null,
+            "in_scope": false,
+            "rationale": "The dataset only contains import transactions, not exports, so molasses exports cannot be queried."
+          }
+        },
+        {
+          "step": "refusal",
+          "detail": {
+            "reason": "no supporting evidence"
+          }
+        }
+      ],
+      "cost": {
+        "input_tokens": 585,
+        "output_tokens": 90,
+        "total_tokens": 675,
+        "cost_usd": 0.0004005,
+        "calls": [
+          {
+            "model": "gemini-2.5-flash",
+            "input_tokens": 585,
+            "output_tokens": 90,
+            "cost_usd": 0.0004005
+          }
+        ]
+      },
+      "latency_ms": 2856.5
+    },
+    "judge": {
+      "faithful": true,
+      "reason": "The answer correctly refuses to answer the question, as no evidence was provided to support any factual claims.",
+      "judge_cost_usd": 0.00056875
+    }
+  }
+]

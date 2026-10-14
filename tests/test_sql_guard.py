@@ -39,7 +39,7 @@ def test_guard_accepts_select(good):
 
 def test_run_select_returns_rows():
     rows = db.run_select("SELECT COUNT(*) AS c FROM trade_transactions")
-    assert rows and rows[0]["c"] == 2232
+    assert rows and rows[0]["c"] == 2000
 
 
 def test_run_select_blocks_write():

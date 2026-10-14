@@ -1,0 +1,458 @@
+% explainer-source-hash: a5dc28276825b05bc9270bc918c55c96805721549760d7e98c3b7f271e5e3c66
+% explainer-source-commit: 7050a98780c1d6252d03f18b01ec457c78a31e67
+% explainer-generated: 2026-10-14
+% Regenerate with /explain-all (see WIRING.md). Do not edit this stamp by hand:
+% it is how the toolchain knows whether this document still matches the code.
+\documentclass[11pt,a4paper]{article}
+\input{preamble}
+
+\title{\textbf{Trade Intelligence Copilot}\\[4pt]
+\large The Brief: what it is, how it works, and what it actually scored}
+\author{Explainer for Salman Adnan's portfolio}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+% =====================================================================
+\section{The one-minute version}
+
+Ask a plain-English question about Pakistani sugar-sector import data and get a
+number that came out of a real database, with the exact query shown. Ask about a
+trade rule and get a definition with the source document cited. Ask about
+something the data does not cover, such as Pakistan's wheat exports in 2019, and
+get a refusal instead of an invention.
+
+\begin{keyidea}{The headline is the evaluation, not the copilot}
+Wiring a language model to a database is a weekend. Knowing whether it is
+\emph{right} is the engineering. This project ships a 28-item test set whose
+correct answers were computed directly from the database, runs the whole system
+against the live Gemini API, publishes the real numbers including the failures,
+and is built to check its own automatic grader against hand labels (a check
+that has to be redone for each run, and is pending for the current one).
+Everything else in this document exists to support that sentence.
+\end{keyidea}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Metric} & \textbf{Result} \\
+\midrule
+SQL answer correctness, versus gold computed from the database & \textbf{15 / 15 = 100\%} \\
+Retrieval hit rate & \textbf{8 / 10 = 80\%} \\
+Refusal precision / recall on unanswerable questions & \textbf{1.00 / 1.00} \\
+LLM-as-judge faithfulness (\code{gemini-2.5-pro}) & \textbf{21 / 22 = 95.5\%} \\
+Judge versus human agreement & \textbf{pending (not yet labelled for this run)} \\
+Mean cost per query & \textbf{\$0.00093} \\
+Latency p50 / p95 & \textbf{9.0 s / 27.0 s} (8.8 s / 12.5 s without 3 rate-limited items) \\
+\bottomrule
+\end{tabular}
+\caption{From one real run over \file{eval/testset.jsonl}. Section~\ref{sec:verify}
+states exactly which of these I re-derived myself and which rest on the README.}
+\end{table}
+
+% =====================================================================
+\section{The four ideas you need}
+
+\begin{jargon}{Retrieval-augmented generation (RAG)}
+A language model knows only what it was trained on, and when it does not know it
+invents fluent nonsense. RAG fixes this by fetching the relevant facts from a
+trusted source first, then handing the model \emph{only} those facts and telling
+it to use nothing else. Closed-book exam becomes open-book, with citations.
+\end{jargon}
+
+\begin{jargon}{Agentic retrieval}
+Plain RAG always runs the same search. Here a model reads the question first and
+\emph{decides} which sources it needs: the database, the document corpus, an
+HS-code lookup, or several at once. That decision step is what makes it
+``agentic''. The model picks the tools; ordinary code runs them.
+\end{jargon}
+
+\begin{jargon}{Text-to-SQL}
+SQL is the language for querying tables of data. Text-to-SQL means the model
+translates ``how many shipments came from China?'' into a query, and the
+\emph{database} computes the number. The model is never asked to recall or
+estimate a figure, which is the whole point: if the query is right, the number
+is right by construction. The danger is obvious, since a model is now writing
+executable code against your data, and Section~\ref{sec:safety} is about
+containing that.
+\end{jargon}
+
+\begin{jargon}{Evaluation layer}
+Machinery that measures whether the system is actually right on a fixed set of
+questions with known answers, producing numbers you can publish and argue with.
+Not a demo. A score. Crucially, the ``known answers'' here are not human
+opinions: they are computed by querying the database directly, so ``correct''
+is not a judgment call.
+\end{jargon}
+
+% =====================================================================
+\section{How it works}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[node distance=8mm]
+  \node[box] (q) {Question};
+  \node[box, right=12mm of q, fill=accent!12] (plan) {\textbf{Planner}\\\scriptsize gemini-2.5-flash\\\scriptsize picks tools, does\\\scriptsize not answer};
+
+  \node[box, above right=7mm and 14mm of plan] (sql) {\textbf{text-to-SQL}\\\scriptsize LLM writes a SELECT};
+  \node[box, right=14mm of plan] (ret) {\textbf{retrieval}\\\scriptsize embed + cosine\\\scriptsize over 48 chunks};
+  \node[box, below right=7mm and 14mm of plan] (hs) {\textbf{hs\_lookup}\\\scriptsize plain SQL join};
+
+  \node[box, right=12mm of sql, fill=warnred!12] (guard) {\textbf{SQL guard}\\\scriptsize + read-only DB};
+
+  \node[dec, right=36mm of ret, xshift=10mm] (ev) {any\\evidence?};
+  \node[box, above right=8mm and 12mm of ev, fill=warnred!12] (refuse) {\textbf{Refuse}\\\scriptsize costs nothing};
+  \node[box, below right=8mm and 12mm of ev, fill=accent!12] (syn) {\textbf{Synthesizer}\\\scriptsize evidence only};
+  \node[box, right=12mm of ev, xshift=28mm] (out) {answer + citations\\+ trace + cost};
+
+  \draw[flow] (q) -- (plan);
+  \draw[flow] (plan) -- (sql); \draw[flow] (plan) -- (ret); \draw[flow] (plan) -- (hs);
+  \draw[flow] (sql) -- (guard);
+  \draw[flow] (guard) -| (ev); \draw[flow] (ret) -- (ev); \draw[flow] (hs) -| (ev);
+  \draw[flow] (ev) -- node[lbl,above]{no} (refuse);
+  \draw[flow] (ev) -- node[lbl,below]{yes} (syn);
+  \draw[flow] (refuse) -- (out); \draw[flow] (syn) -- (out);
+\end{tikzpicture}}
+\caption{Three model calls on a typical answer (plan, write SQL, synthesize);
+two on a refusal, because the evidence check fires before the expensive call.}
+\end{figure}
+
+Read it as a sentence: \emph{an LLM decides which tools to run; ordinary code
+runs them; a cheap check refuses when they return nothing; a second LLM writes
+prose using only what they returned.}
+
+\begin{keyidea}{No model is ever trusted with both the facts and the final word}
+The planner chooses but does not answer. The text-to-SQL model writes a query
+but never executes it. The synthesizer writes prose but is handed a fixed block
+of evidence. Every model in the system is boxed in by code on both sides.
+\end{keyidea}
+
+\subsection{What is underneath}
+
+\begin{itemize}
+\item \textbf{The trade data}: 2,000 import shipments in a single SQLite file
+  (a complete database that is just a file, no server), produced by a seeded
+  generator, \file{data/build\_db.py}. Every company, price and quantity is made
+  up; only the HS headings and country names are real. All imports, all HS
+  chapter 17 (sugar), all between 2025-01-01 and 2025-12-31, from 28 countries.
+  Those scope facts are written into the prompts, which is what lets the system
+  know what it cannot answer.
+\item \textbf{The regulations corpus}: 16 authored plain-language explainers,
+  split at their section headings into 48 chunks, each embedded as 768 numbers
+  representing its meaning, cached on disk.
+\item \textbf{The vector store}: a 48-by-768 numpy matrix with pre-normalized
+  rows, so finding the closest chunk is a single matrix-vector product. Exact,
+  instant, 57 lines.
+\item \textbf{No framework.} About a thousand lines of Python, no LangChain, no
+  agent library. For a project whose purpose is to show the author understands
+  the mechanism, a framework would hide the interesting parts.
+\end{itemize}
+
+\begin{keyidea}{The pgvector decision, defended}
+pgvector was the first choice; the target machine has PostgreSQL 18 without the
+\code{vector} extension and no way to install it. Rather than fight the
+infrastructure, the author wrote the search by hand. For 48 chunks this is the
+better engineering anyway: brute force is instant and \emph{exact}, whereas an
+approximate index would be slower to build, approximate, and one more moving
+part. The honest cost, no ANN index and no server-side filtering, starts to
+matter around six figures of chunks, not 48.
+\end{keyidea}
+
+% =====================================================================
+\section{Two things that make it trustworthy}
+
+\subsection{The safety boundary}
+\label{sec:safety}
+
+A language model is writing SQL against a database, so the SQL is contained in
+three independent layers:
+
+\begin{enumerate}
+\item \textbf{A guard} that rejects anything which is not a single
+  \code{SELECT}: no comments, no second statement, no write or DDL keywords, no
+  \code{PRAGMA}.
+\item \textbf{The connection}, opened \code{mode=ro\&immutable=1} with
+  \code{PRAGMA query\_only = ON}, so SQLite itself refuses writes.
+\item \textbf{A row cap} of 200, so a runaway \code{SELECT} cannot flood memory
+  or a prompt.
+\end{enumerate}
+
+The argument is not that any layer is strong. A keyword blocklist is a
+blocklist and someone will think of a word you forgot. The argument is that a
+bypass must defeat all three, and the tests assert each one independently,
+including that a raw \code{CREATE TABLE} fails on the connection even with the
+guard skipped entirely.
+
+\subsection{The refusal path}
+
+If every tool comes back empty, a nine-line function refuses immediately,
+before any synthesis call. It cannot be argued out of it, cannot be
+prompt-injected, costs zero tokens and zero seconds, and returns a fixed string.
+Faster, cheaper and more reliable at the same time, which is a rare trade.
+
+% =====================================================================
+\section{The evaluation layer}
+
+\begin{figure}[H]
+\centering
+\resizebox{0.96\textwidth}{!}{
+\begin{tikzpicture}[node distance=8mm]
+  \node[box] (ts) {\file{testset.jsonl}\\\scriptsize 28 items + gold};
+  \node[box, right=12mm of ts, fill=accent!12] (ask) {\textbf{the real copilot}\\\scriptsize live API};
+  \node[box, right=12mm of ask, fill=accent!12] (judge) {\textbf{judge}\\\scriptsize gemini-2.5-pro};
+  \node[store, right=12mm of judge] (tr) {\file{transcripts.json}};
+
+  \node[box, below=18mm of ask, fill=warnred!12] (metrics) {\textbf{compute\_metrics()}\\\scriptsize offline, free, repeatable};
+  \node[store, left=14mm of metrics] (hl) {\file{human\_labels.json}\\\scriptsize hand labels (pending)};
+  \node[store, right=14mm of metrics] (res) {\file{results.json}\\\scriptsize published numbers};
+
+  \draw[flow] (ts) -- (ask); \draw[flow] (ask) -- (judge); \draw[flow] (judge) -- (tr);
+  \draw[dflow] (tr.south) -- ++(0,-7mm) -| node[lbl,pos=0.25,above]{saved once, scored forever} (metrics.north);
+  \draw[flow] (hl) -- (metrics);
+  \draw[flow] (metrics) -- (res);
+\end{tikzpicture}}
+\caption{Split in two on purpose. The paid run happens once and is saved; the
+scoring can then be re-run, corrected and independently audited for free.}
+\end{figure}
+
+The 28 items are 12 SQL questions, 7 retrieval questions, 3 that need both, and
+6 that must be refused. SQL correctness is scored over the 12 plus the 3, which
+is where \textbf{15/15} comes from.
+
+\begin{keyidea}{Ground truth is what makes the number mean anything}
+The gold answer to ``how many shipments came from China?'' is not a human guess.
+It is the result of running the counting query against the database directly.
+That single decision is what caught the project's best bug, in its first version:
+asked how many shipments one importer brought in, the model wrote a \code{buyer
+LIKE} match on the full company name without wildcards, matched nothing, and
+reported \emph{0 shipments}. The answer was fluent and completely wrong. The gold
+number, which was dozens, exposed it in one run. Tightening the schema prompt to
+require \code{LIKE '\%...\%'} for names fixed it, and the same kind of question on
+the synthetic data (``How many shipments did Orvella Foods import?'') now comes
+back right: 191.
+\end{keyidea}
+
+\begin{keyidea}{Faithful is not the same as correct}
+That zero-row answer was judged \textbf{faithful}: it accurately reported what
+its query returned. It was also completely wrong. This is why the project
+measures grounding and ground-truth correctness as two separate numbers. Anyone
+reporting a single ``accuracy'' figure for a RAG system has not hit this yet.
+\end{keyidea}
+
+\begin{keyidea}{A judge you have not validated is not evidence}
+If you grade a model with a model, who grades the judge? The harness compares
+the judge with the author's hand labels on a 12-item subset. On the first version
+they agreed 11 times out of 12. Labels belong to one run's answers, so after the
+switch to synthetic data the subset has to be labelled again, and until it is the
+agreement is reported as null rather than carried over. That makes the current
+95.5\% \emph{less} interpretable than it looks. Its single miss is the same
+judgment call as last time: on ``how many shipments under HS code 1702.1100
+(lactose)'', the answer had the right count (227) and repeated the question's own
+``(lactose)'' label, which the evidence rows never state. The judge called that
+unfaithful. A human might not. Both are defensible, which is exactly the point.
+\end{keyidea}
+
+% =====================================================================
+\section{What I verified, and what I did not}
+\label{sec:verify}
+
+\begin{keyidea}{The live run was re-done for the synthetic data}
+When the data was replaced, the live phase was run again once (28 items, about
+\$0.026 of API usage), and the four live tests were run against the API. Every
+other check below is offline.
+\end{keyidea}
+
+\begin{itemize}
+\item \textbf{The gold answers are genuinely ground truth: verified.} They are
+  written by \file{eval/build\_testset.py}, which runs a query for each one, and I
+  re-derived them with independent queries (total USD 274,995,234.91; 2,000 rows;
+  China 208 shipments; top country Brazil; Orvella Foods 191; HS 1704 total
+  11,665,069.33). Every scope fact checked out too: \code{trade\_type} has exactly
+  one distinct value, \code{'import'}; dates run 2025-01-01 to 2025-12-31; 28
+  countries; 28 companies. Two builds of the database are byte-identical.
+\item \textbf{The metrics reproduce: verified.} With credentials unset so no API
+  call was possible, \code{python -m eval.run\_eval --metrics} recomputed every
+  number from the committed transcripts and produced output
+  \textbf{byte-identical} to the committed \file{results.json}.
+\item \textbf{The test suite: verified.} \code{pytest} with no credentials gives
+  \textbf{29 passed, 4 skipped}; with credentials the four live tests pass too,
+  matching the README's claim exactly.
+\end{itemize}
+
+\begin{honest}{Precisely what ``15/15'' rests on}
+All three links are verified for the current numbers: the gold answers are
+provably correct (re-derived from the database), the scoring provably yields
+15/15 (recomputed offline, byte-identical), and the transcripts are the output of
+a real live run against Gemini, done on 2026-10-14 when the data was replaced.
+
+That run hit Vertex rate limits. Three items waited out \code{429} responses, so
+their recorded latencies (27, 46 and 30 seconds) include waiting, which is why
+p95 is reported both with and without them. The transcripts carry per-call token
+counts and genuine \emph{failures} (two retrieval misses and one judged
+unfaithful answer); nothing was re-run to make a number look better.
+\end{honest}
+
+% =====================================================================
+\section{Honest findings}
+
+\subsection{What the project already owns, and gets right}
+
+The wildcard bug and the faithful-but-wrong distinction above are both the
+project's own findings, documented in its README. So is a third: the first eval
+run flagged HS-lookup answers as unfaithful because the judge could not see the
+HS rows the answerer had used. Fixing that plumbing turned the remaining flags
+into genuine findings. A harness that manufactures failures is as dangerous as
+one that hides them.
+
+The two remaining faithfulness misses are a single pattern, and it is the best
+technical observation in the project:
+
+\begin{keyidea}{Enumeration is where grounded models leak}
+In the first version, point-fact answers stayed grounded across the whole set,
+and ``list everything under this heading'' is where the model reached past its
+evidence, padding its list with plausible product names the judge caught by name.
+A list of three items \emph{feels} incomplete, and the model's training pushes it
+toward a satisfying list. In the synthetic re-run the lists stayed inside the
+evidence, most likely because the synthetic HS hierarchy is small enough for the
+lookup to return every item. That is luck, not a fix. The fix is structural, not a
+sterner instruction: post-filter enumerated items against the evidence rows.
+\end{keyidea}
+
+\subsection{What this review found}
+
+\begin{honest}{Five things worth knowing before an interviewer finds them}
+\begin{enumerate}
+\item \textbf{\code{in\_scope} is dead code.} The planner is prompted for it, the
+  model reasons about it, the code carefully normalizes it, and \emph{nothing
+  ever reads it}. It costs tokens on every request and reads like a safety
+  control while being none. Either wire it in (it could skip straight to refusal
+  and save two model calls) or delete it.
+\item \textbf{The SQL guard rejects valid queries.} The keyword regex scans the
+  whole query with no awareness of string literals, so
+  \code{... WHERE name LIKE '\%Create\%'} is rejected. I ran this against the
+  real guard to confirm it. A company named ``Create Foods'' would be
+  unqueryable. It fails \emph{safe}, which is the right direction to err, but
+  the clean fix is SQLite's authorizer callback, which cannot be fooled by
+  quoting.
+\item \textbf{``Deterministic refusal'' is deterministic only in its last step.}
+  All six refusals traced as \code{['plan', 'refusal']}, meaning no tool ran at
+  all. The guard did not weigh evidence and find it wanting; it fired because
+  the \emph{planner} chose no tools. The decisive judgment belongs to an LLM.
+  6/6 is real, but the honest claim is narrower than ``enforced
+  deterministically''.
+\item \textbf{The 80\% retrieval hit rate is really a planner score.} Both
+  misses had no retrieval step in the trace at all: the planner never invoked
+  retrieval, so no chunk could be found. Retrieval went \textbf{8 for 8} on
+  everything it was actually asked to find. The metric's name points at the
+  wrong component.
+\item \textbf{A latent citation bug.} The SQL rows shown to the judge are gated
+  on \code{used\_sql}, a field the \emph{synthesizer reports about itself},
+  rather than on whether rows exist. That is a structural repeat of the
+  HS-lookup bug already fixed once. I checked all 28 transcripts and found
+  \textbf{zero} instances, so the published 95.5\% is not contaminated. It is a
+  latent fragility with a one-line fix.
+\end{enumerate}
+\end{honest}
+
+Minor: \code{jinja2} is pinned in \file{requirements.txt} and never imported
+(the server reads its template as a plain string). Per-query costs are real
+token counts multiplied by \emph{list prices hardcoded in a dict}, not billed
+amounts, so they will silently drift if Google changes pricing.
+
+\subsection{Limits the project states, and should keep stating}
+
+\begin{itemize}
+\item \textbf{One run, 28 items.} Every number is a single sample. 15/15 on 15
+  questions is a good result with wide error bars. ``The paths work'', not ``it
+  is 100\% accurate''.
+\item \textbf{SQL correctness is scraped from prose}, so a wrong answer
+  containing the right number would score correct. The project documents this
+  itself.
+\item \textbf{The judge and the answerer are the same model family}, so shared
+  blind spots are possible; the human labels only partly cover this.
+\item \textbf{The corpus is authored summaries, not primary law.} Faithfulness
+  measures grounding in that corpus, not legal accuracy. The project says so in
+  three places and should keep doing so.
+\item \textbf{Latency is high} (p50 about 9 s) because three or four model calls
+  run strictly in sequence, even when the tools are independent.
+\end{itemize}
+
+% =====================================================================
+\section{How to defend it}
+
+\begin{keyidea}{The five things to say}
+\begin{enumerate}
+\item \textbf{Lead with the eval.} Anyone can wire an LLM to a database. The
+  differentiator is gold answers computed from the database, published metrics
+  including the failures, and a judge checked against hand labels.
+\item \textbf{Tell the wildcard story.} A fluent answer said 0 shipments; the
+  truth was dozens; the gold number caught it in one run. That is the argument
+  for evaluation in thirty seconds.
+\item \textbf{Separate faithful from correct}, and note the same bug proved why:
+  the wrong answer was perfectly faithful to its own wrong query.
+\item \textbf{Defend the hand-built vector store.} 48 chunks, exact search, one
+  matrix-vector product, no server. The simpler thing is also the better thing
+  here.
+\item \textbf{Volunteer the limits.} 80\% is really a routing problem.
+  Enumeration is where grounding leaks. \code{in\_scope} is dead. Say it first.
+\end{enumerate}
+\end{keyidea}
+
+\subsection{Expect these questions}
+
+\begin{itemize}
+\item \emph{``What stops the model dropping your tables?''} Three layers, a test
+  asserts a write fails even with the guard bypassed. Then volunteer the
+  string-literal false positive.
+\item \emph{``Isn't using an LLM to grade an LLM circular?''} Yes, which is why
+  the judge is checked against hand labels: 11/12 on the first version, and
+  the labels are being redone for the synthetic re-run rather than carried over.
+\item \emph{``Faithfulness is 95.5\%; why should I trust it?''} Not fully, yet:
+  the judge has not been checked against hand labels for this run, and its one
+  miss is a judgment call about a label the user supplied. On the first version
+  it was 86\% with an 11/12 judge check, and the misses were enumeration padding,
+  a known failure mode with a structural fix.
+\item \emph{``Would this scale?''} The vector store needs a real index somewhere
+  around six figures of chunks. The tighter constraint is latency: merge the
+  planner with text-to-SQL and parallelise independent tools.
+\end{itemize}
+
+% =====================================================================
+\section{Glossary}
+
+\begin{description}[leftmargin=!,labelwidth=3.2cm,style=nextline]
+\item[Agentic retrieval] Retrieval where a model decides which sources to
+  consult rather than always running one fixed search.
+\item[Chunk] One retrievable piece of a document; here, one section.
+\item[Cosine similarity] How closely two vectors point the same way. With
+  normalized vectors it is just the dot product.
+\item[Embedding] A list of numbers (768 here) representing the meaning of text.
+\item[Faithfulness] Whether an answer is supported by the evidence it was given.
+  Not the same as correctness.
+\item[Ground truth] The known-correct answer, established independently; here,
+  computed straight from the database.
+\item[HS code] International product classification. This dataset is chapter 17,
+  sugar.
+\item[LLM-as-judge] Using a model to grade another model's output.
+\item[Precision / recall] Of the refusals, how many were right / of the questions
+  needing refusal, how many were caught.
+\item[RAG] Fetch the facts, then let the model write using only those facts.
+\item[SQLite] A complete relational database that is a single file, no server.
+\item[Text-to-SQL] Having a model translate a question into a real database
+  query and running it.
+\end{description}
+
+\vfill
+\begin{center}
+\small\itshape
+Built from the source at \file{trade-intelligence-copilot}. Every metric quoted
+was recomputed offline from the committed transcripts, and every gold answer
+re-derived from the shipped database, before it was written down.
+\end{center}
+
+\end{document}

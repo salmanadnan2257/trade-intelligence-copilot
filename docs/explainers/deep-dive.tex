@@ -1,0 +1,1388 @@
+% explainer-source-hash: a5dc28276825b05bc9270bc918c55c96805721549760d7e98c3b7f271e5e3c66
+% explainer-source-commit: 7050a98780c1d6252d03f18b01ec457c78a31e67
+% explainer-generated: 2026-10-14
+% Regenerate with /explain-all (see WIRING.md). Do not edit this stamp by hand:
+% it is how the toolchain knows whether this document still matches the code.
+\documentclass[11pt,a4paper]{article}
+\input{preamble}
+
+\title{\textbf{Trade Intelligence Copilot}\\[4pt]
+\large A Deep Dive: agentic retrieval over trade data,\\with an evaluation layer that is the point}
+\author{Explainer for Salman Adnan's portfolio}
+\date{}
+
+\begin{document}
+\maketitle
+\thispagestyle{empty}
+
+\begin{keyidea}{Read this first: what this document assumes}
+Nothing. This document assumes you have never built a retrieval system, never
+written a line of SQL, and have never heard the phrase ``agentic retrieval''.
+Every technical term is defined in a \textbf{Jargon} box the first time it
+appears. If you already know the vocabulary, skip the boxes and read the
+diagrams.
+\end{keyidea}
+
+\tableofcontents
+\newpage
+
+% =====================================================================
+\section{What this project is, in one paragraph}
+
+Trade Intelligence Copilot answers plain-English questions about Pakistani
+sugar-sector import data and about trade-regulation concepts. You type
+``Which country was the largest source of imports by value?'' and it replies
+with a number taken from a real database, showing you the exact query it ran
+and the rows it got back. You type ``What is a phytosanitary certificate?''
+and it replies with a definition drawn from a specific document, and tells you
+which document. You type ``What were Pakistan's wheat exports to India in
+2019?'' and it says: \emph{this question is not supported by the available
+data}, because the dataset holds no exports, no wheat, and no 2019.
+
+That last behaviour is the hard one, and it is why the project exists.
+
+\begin{keyidea}{The thesis of the project}
+Most demonstrations of this technology answer confidently and are never
+measured. This one ships a 28-item test set with ground-truth answers computed
+directly from the database, runs the whole system against a live model API,
+publishes the real numbers, and is built to check its own automatic grader
+against hand labels (redone per run; pending for the current one). The headline
+is not the copilot. The headline is the
+\textbf{evaluation layer}.
+\end{keyidea}
+
+% =====================================================================
+\section{The ideas, from first principles}
+
+Before any code, here is the vocabulary. Each idea is small; the system is just
+these ideas wired together.
+
+\subsection{Large language models, and their central weakness}
+
+\begin{jargon}{Large language model (LLM)}
+A program trained on an enormous amount of text to predict what text should
+come next. Given ``The capital of France is'', it answers ``Paris''. Modern
+ones follow instructions, write code, and produce structured output. This
+project uses Google's Gemini models through Vertex AI, Google's cloud platform
+for machine-learning services.
+\end{jargon}
+
+An LLM knows only what it absorbed during training. It does not know what is in
+\emph{your} database. Worse, when it does not know, it often invents an answer
+that reads perfectly. This is called \textbf{hallucination}, and for a system
+that reports trade values in dollars it is fatal: a confidently invented
+\$175 million is worse than no answer at all.
+
+\begin{jargon}{Hallucination}
+When a language model states something fluent, plausible and false. The model is
+not lying; it has no concept of truth. It is producing text that pattern-matches
+what a correct answer looks like.
+\end{jargon}
+
+\subsection{Retrieval-augmented generation (RAG)}
+
+The standard fix is to stop asking the model to \emph{remember} and start
+forcing it to \emph{read}.
+
+\begin{jargon}{Retrieval-augmented generation (RAG)}
+A pattern in two beats. First \textbf{retrieve}: go and fetch the specific facts
+or documents relevant to the question from a trusted source. Then
+\textbf{generate}: hand the model \emph{only} those facts and instruct it to
+answer using nothing else. The model contributes fluency and reasoning; the
+trusted source contributes the facts.
+\end{jargon}
+
+This is the difference between a closed-book exam and an open-book exam where
+you are only allowed to cite the page in front of you.
+
+\subsection{Agentic retrieval: the step that makes it ``agentic''}
+
+Plain RAG always does the same thing: search a pile of documents, paste the
+results in, answer. But the questions here are not all the same shape. ``What
+was the total USD value of all imports?'' is not a question about documents at
+all; it is arithmetic over a database. ``What is a certificate of origin?'' is
+purely a document question. ``How much sugar was imported, and why is sugar
+policy-sensitive?'' is both at once.
+
+\begin{jargon}{Agentic retrieval}
+Retrieval where the system first \textbf{decides for itself} which sources to
+consult, and how many, rather than always running one fixed search. A model
+reads the question and picks the tools. That decision step is what earns the
+word ``agentic''. The system is choosing a strategy, not executing a fixed
+recipe.
+\end{jargon}
+
+\begin{jargon}{Tool}
+A concrete capability the system can invoke: run a database query, search
+documents, look up a code. The model does not perform the tool's work; it
+\emph{names} the tool it wants and ordinary code performs the work. This
+distinction matters for safety: the model never touches the database directly.
+\end{jargon}
+
+In this project the planner is an LLM whose entire job is to answer: does this
+question need SQL, document retrieval, an HS-code lookup, or some combination?
+It is explicitly told \emph{not} to answer the question itself.
+
+\subsection{Text-to-SQL}
+
+\begin{jargon}{SQL}
+Structured Query Language, the standard language for asking questions of a
+relational database (data in tables of rows and columns).
+\code{SELECT COUNT(*) FROM trade\_transactions} means ``count every row in the
+trade\_transactions table''. \code{SELECT} reads data; other commands such as
+\code{INSERT}, \code{UPDATE}, \code{DELETE} and \code{DROP} change or destroy
+it.
+\end{jargon}
+
+\begin{jargon}{Text-to-SQL}
+Having a language model translate a plain-English question into a SQL query,
+then running that query on the real database and using the returned rows as the
+answer. The model supplies the translation; the database supplies the number.
+\end{jargon}
+
+This is the single most important idea for trustworthiness here. When you ask
+for a total, the model is never asked to recall or estimate the total. It is
+asked to write a query. The database computes the number. If the query is
+right, the number is right by construction.
+
+The obvious danger: the model is writing executable code against your database,
+and a model can be talked into writing \code{DROP TABLE}. Section~\ref{sec:guard}
+is entirely about containing that.
+
+\subsection{Embeddings, vectors and cosine similarity}
+
+For the document half of the system, we need to find text that is
+\emph{about} the same thing as the question, even when it shares no words with
+it. Searching for the literal word ``phytosanitary'' is brittle; the user might
+ask about ``plant health paperwork''.
+
+\begin{jargon}{Embedding}
+A list of numbers (here, 768 of them) that represents the \emph{meaning} of a
+piece of text, produced by a model trained for the purpose. The useful property:
+texts with similar meanings get similar lists, even with no words in common.
+\end{jargon}
+
+\begin{jargon}{Vector}
+A list of numbers treated as a point, or an arrow from the origin, in space.
+768 numbers means a point in 768-dimensional space. You cannot picture it; the
+arithmetic works exactly as it does in the two dimensions you can picture.
+\end{jargon}
+
+\begin{jargon}{Cosine similarity}
+A measure of whether two vectors point the same way, ignoring their length.
+It runs from $1.0$ (identical direction, so: same meaning) through $0$
+(unrelated) to $-1.0$ (opposite). ``Similar meaning'' becomes ``small angle
+between the arrows'', and that is a number you can sort by.
+\end{jargon}
+
+The trick that makes this cheap: if every vector is first scaled to length
+exactly $1$ (``normalized''), then cosine similarity is just the dot product,
+which is one multiply-and-add per dimension. The project exploits this
+directly, and Section~\ref{sec:vectorstore} shows the four lines of code where
+it happens.
+
+\subsection{Chunks and citation}
+
+\begin{jargon}{Chunk}
+A document cut into a retrievable piece. You do not embed a whole document,
+because then a hit tells the reader ``the answer is somewhere in these five
+pages''. This project splits each document at its \code{\#\#} section headings,
+so one chunk is one whole section, which is also the natural thing to cite.
+\end{jargon}
+
+Each chunk carries an id like \code{phytosanitary-sps-basics\#s2}, meaning
+section 2 of that document. When the copilot states a rule, it prints that id.
+The claim is auditable: you can go read the exact section it came from.
+
+\subsection{An evaluation layer, and why it is the whole point}
+
+\begin{jargon}{Evaluation layer (``eval'')}
+Machinery that measures whether the system is actually right, on a fixed set of
+questions with known correct answers, producing numbers you can publish and
+argue with. Not a demo, not a vibe check: a score.
+\end{jargon}
+
+\begin{jargon}{Ground truth}
+The known-correct answer, established independently of the system being tested.
+Here, the gold answer to ``how many shipments came from China?'' is not a human
+guess: it is the result of running the counting query against the database
+directly. It cannot be wrong, so ``correct'' stops being a matter of opinion.
+\end{jargon}
+
+\begin{keyidea}{Why an eval changes the argument}
+Without an eval you can say ``it seems to work''. An interviewer cannot check
+that, and neither can you. With an eval you can say ``on 15 questions whose
+answers I computed from the database, it got 15 right, and here is the
+harness''. It also catches bugs no amount of looking at pretty answers ever
+would: this project's text-to-SQL step once produced a query that returned zero
+rows, and the answer that reported ``0 shipments'' looked completely
+reasonable. Only the gold number, which was dozens, exposed it.
+\end{keyidea}
+
+\begin{jargon}{LLM-as-judge}
+Using a second, usually stronger, language model to grade the first one's
+output. Here \code{gemini-2.5-pro} reads the answer plus the evidence and rules
+on whether every claim is supported. Necessary because ``did this paragraph
+invent anything?'' cannot be checked with string matching.
+\end{jargon}
+
+\begin{jargon}{Faithfulness}
+Whether an answer is fully supported by the evidence it was given. Note
+carefully that faithfulness is \textbf{not} correctness. An answer that
+faithfully reports the output of a wrong query is faithful and wrong. This
+project keeps the two measurements separate on purpose, and
+Section~\ref{sec:findings} explains why that separation was forced on it by a
+real bug.
+\end{jargon}
+
+\begin{keyidea}{A judge you have not validated is not evidence}
+If you grade a model with a model, who grades the judge? This project answers
+that: the author hand-labels a 12-item subset, and the harness reports how
+often the judge agreed with the author (11 of 12 on the first version; pending
+for the current run). That agreement number is what makes the faithfulness
+number mean anything at all.
+\end{keyidea}
+
+% =====================================================================
+\section{Map of the repository}
+
+Every tracked file, and what it is for.
+
+\begin{figure}[H]
+\centering
+\begin{forest} dirtree
+[trade-intelligence-copilot
+  [app/ {\rmfamily\itshape the copilot itself}
+    [config.py {\rmfamily\itshape all settings + secrets read from environment}]
+    [llm.py {\rmfamily\itshape Gemini wrapper + token-cost meter}]
+    [embeddings.py {\rmfamily\itshape Vertex embedding REST calls}]
+    [vectorstore.py {\rmfamily\itshape numpy cosine-similarity search}]
+    [schema\_prompt.py {\rmfamily\itshape DB schema + scope facts + SQL rules}]
+    [planner.py {\rmfamily\itshape THE AGENT: picks the tools}]
+    [tools.py {\rmfamily\itshape text-to-SQL, retrieval, hs\_lookup}]
+    [db.py {\rmfamily\itshape SQLite access + the SQL safety guard}]
+    [answer.py {\rmfamily\itshape grounded synthesis + refusal}]
+    [agent.py {\rmfamily\itshape orchestration, trace, cost}]
+    [server.py {\rmfamily\itshape FastAPI: /ask, /health, /}]
+    [templates/index.html {\rmfamily\itshape single-page UI}]
+  ]
+  [data/
+    [build\_db.py {\rmfamily\itshape seeded generator -> trade.sqlite}]
+    [trade.sqlite {\rmfamily\itshape 2,000 synthetic shipments (prebuilt, shipped)}]
+    [regulations/ {\rmfamily\itshape 16 authored explainer documents}]
+    [chunks.json {\rmfamily\itshape 48 chunks + metadata (prebuilt)}]
+    [vectors.npz {\rmfamily\itshape 48x768 normalized matrix (prebuilt)}]
+  ]
+  [ingest/ingest.py {\rmfamily\itshape chunk + embed the corpus}]
+  [eval/ {\rmfamily\itshape THE HEADLINE}
+    [testset.jsonl {\rmfamily\itshape 28 questions + gold answers}]
+    [run\_eval.py {\rmfamily\itshape harness: run, judge, score}]
+    [transcripts.json {\rmfamily\itshape every answer from the real run}]
+    [results.json {\rmfamily\itshape the published metrics}]
+    [human\_labels.json {\rmfamily\itshape hand labels for the judge check (pending)}]
+  ]
+  [tests/ {\rmfamily\itshape 33 tests: 29 offline, 4 live}]
+  [docs/ {\rmfamily\itshape ARCHITECTURE.md, EVALUATION.md}]
+  [requirements.txt]
+  [.env.example {\rmfamily\itshape config template, no real values}]
+]
+\end{forest}
+\caption{The repository. Roughly 1,000 lines of Python, deliberately small: the
+substance is in \file{eval/}, not in framework scaffolding.}
+\end{figure}
+
+\begin{keyidea}{No framework}
+There is no LangChain, no LlamaIndex, no agent framework. The planner, the tool
+dispatch, the vector store and the eval harness are all hand-written and total
+about a thousand lines. This is a defensible choice for a project whose purpose
+is to demonstrate that the author understands the mechanism: a framework would
+hide exactly the parts worth showing.
+\end{keyidea}
+
+% =====================================================================
+\section{End-to-end architecture}
+
+Here is the entire system. One question enters at the left; an answer with
+citations, a trace, a cost and a latency leaves at the right.
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[node distance=8mm]
+  \node[box] (q) {Question\\\scriptsize ``How many shipments\\\scriptsize came from China?''};
+  \node[box, right=14mm of q, fill=accent!12] (plan) {\textbf{Planner}\\\scriptsize gemini-2.5-flash\\\scriptsize picks the tools};
+
+  \node[box, above right=6mm and 16mm of plan] (sql) {\textbf{text-to-SQL}\\\scriptsize LLM writes SELECT};
+  \node[box, right=16mm of plan] (ret) {\textbf{retrieval}\\\scriptsize embed + cosine};
+  \node[box, below right=6mm and 16mm of plan] (hs) {\textbf{hs\_lookup}\\\scriptsize direct SQL join};
+
+  \node[box, right=12mm of sql, fill=warnred!12] (guard) {\textbf{SQL guard}\\\scriptsize single SELECT only};
+  \node[store, right=12mm of guard] (db) {SQLite\\\scriptsize read-only};
+  \node[store, right=12mm of ret] (vs) {vectors\\\scriptsize 48x768};
+  \node[store, right=12mm of hs] (db2) {SQLite\\\scriptsize hierarchy};
+
+  \node[dec, right=44mm of ret, xshift=14mm] (ev) {any\\evidence?};
+  \node[box, above right=8mm and 12mm of ev, fill=warnred!12] (refuse) {\textbf{Refuse}\\\scriptsize deterministic,\\\scriptsize costs nothing};
+  \node[box, below right=8mm and 12mm of ev, fill=accent!12] (syn) {\textbf{Synthesizer}\\\scriptsize gemini-2.5-flash\\\scriptsize evidence only};
+  \node[box, right=14mm of ev, xshift=30mm] (out) {\{answer, supported,\\citations, trace,\\cost, latency\}};
+
+  \draw[flow] (q) -- (plan);
+  \draw[flow] (plan) -- (sql); \draw[flow] (plan) -- (ret); \draw[flow] (plan) -- (hs);
+  \draw[flow] (sql) -- (guard); \draw[flow] (guard) -- (db);
+  \draw[flow] (ret) -- (vs); \draw[flow] (hs) -- (db2);
+  \draw[flow] (db) -- (ev); \draw[flow] (vs) -- (ev); \draw[flow] (db2) -- (ev);
+  \draw[flow] (ev) -- node[lbl,above]{no} (refuse);
+  \draw[flow] (ev) -- node[lbl,below]{yes} (syn);
+  \draw[flow] (refuse) -- (out); \draw[flow] (syn) -- (out);
+\end{tikzpicture}}
+\caption{The agent loop. Three model calls on a typical answered question
+(plan, text-to-SQL, synthesize); two on a refusal, because the deterministic
+check fires before the expensive synthesis call.}
+\label{fig:arch}
+\end{figure}
+
+Read that diagram as a sentence: \emph{an LLM decides which tools to run;
+ordinary code runs them; a cheap check refuses when they returned nothing; and
+a second LLM writes prose using only what they returned.}
+
+\begin{keyidea}{Where the trust lives}
+Notice what the models are and are not allowed to do. The planner chooses but
+does not answer. The text-to-SQL model writes a query but never executes it: the
+guard and the read-only connection do that. The synthesizer writes prose but is
+handed a fixed block of evidence and told to use nothing else. No model is ever
+trusted with both the facts and the final word.
+\end{keyidea}
+
+% =====================================================================
+\section{The data layer}
+
+\subsection{Where the trade data comes from}
+
+\file{data/build\_db.py} \emph{generates} the trade data: a compact SQLite
+database of synthetic Pakistani sugar-sector imports. Every importer, supplier,
+shipping agent, price and quantity is made up. Only the public scaffolding is
+real: the HS chapter 17 headings and the country names. The first version of the
+project ran on a dataset that cannot be published, and this generator replaced it.
+
+\begin{jargon}{SQLite}
+A complete relational database that is just a single file on disk, with no
+server to install or run. Ideal here: the demo database ships inside the repo
+and the project runs with nothing to set up.
+\end{jargon}
+
+\begin{jargon}{Seeded generator}
+A program that draws ``random'' values from a pseudo-random number generator
+started at a fixed number, the seed. Same seed, same sequence, so the output is
+identical on every run. Here \code{SEED = 1717}, and two builds of
+\file{trade.sqlite} are byte-for-byte the same file.
+\end{jargon}
+
+The script is deliberately plain: drop the file if it exists, create the schema,
+write the HS hierarchy, then draw 2,000 shipments. Each shipment picks a
+subcategory by weight, an origin country (bulk sugar and molasses only from
+Brazil, Thailand or India, weighted so Brazil clearly leads by value), a price
+from that subcategory's band, and a log-uniform quantity, so there are many small
+lots and a few large ones. Determinism is what makes the evaluation honest after
+the switch: \file{eval/build\_testset.py} recomputes every gold answer from the
+generated file with a query, so nobody types a gold number by hand.
+
+\subsection{The schema}
+
+\begin{figure}[H]
+\centering
+\resizebox{0.95\textwidth}{!}{
+\begin{tikzpicture}[node distance=9mm]
+  \node[box] (p) {\textbf{products}\\\scriptsize id, hs\_code, name\\\scriptsize e.g. 1701 `Cane or beet sugar'};
+  \node[box, below=of p] (c) {\textbf{product\_categories}\\\scriptsize id, hs\_code, name, product\_id};
+  \node[box, below=of c] (s) {\textbf{product\_subcategories}\\\scriptsize id, hs\_code, name, category\_id};
+  \node[box, below=of s] (i) {\textbf{product\_items}\\\scriptsize id, name, subcategory\_id};
+  \node[box, right=42mm of s, fill=accent!12] (t) {\textbf{trade\_transactions}\\\scriptsize 2,000 rows, ALL imports\\\scriptsize country, hs\_code, buyer, seller\\\scriptsize usd, pkr, qty\_kg, qty\_mt\\\scriptsize reporting\_date 2025-01-01 .. 2025-12-31};
+  \node[box, above=14mm of t] (co) {\textbf{companies}\\\scriptsize 28 rows, a directory\\\scriptsize not fully linked to transactions};
+
+  \draw[flow] (c) -- node[lbl,right]{product\_id} (p);
+  \draw[flow] (s) -- node[lbl,right]{category\_id} (c);
+  \draw[flow] (i) -- node[lbl,right]{subcategory\_id} (s);
+  \draw[flow] (t) -- node[lbl,above]{product\_item\_id} (i);
+\end{tikzpicture}}
+\caption{The HS-code hierarchy on the left, the fact table on the right. Four
+indexes exist on \code{trade\_transactions}: country, hs\_code, trade\_type and
+reporting\_date, which are exactly the columns the questions filter on.}
+\label{fig:schema}
+\end{figure}
+
+\begin{jargon}{HS code}
+The Harmonized System, an international product-classification standard. The
+first two digits are the chapter, the first four the heading. This dataset is
+entirely chapter 17: 1701 cane and beet sugar, 1702 other sugars and syrups,
+1703 molasses, 1704 sugar confectionery. Codes are stored as \emph{text}, not
+numbers, so that \code{1702.1100} keeps its shape and prefix matching works.
+\end{jargon}
+
+\subsection{The scope facts: the quiet foundation of honest refusal}
+
+\file{app/schema\_prompt.py} carries three blocks of text that are injected into
+prompts. The second, \code{DATASET\_SCOPE}, is the most interesting thing in the
+file, and it is easy to overlook:
+
+\begin{lstlisting}[language=Python,caption={The scope facts, given to both the planner and the text-to-SQL step (abridged).}]
+DATASET_SCOPE = """
+DATASET SCOPE (important for deciding if a question is answerable):
+- trade_transactions contains 2000 rows. Every row is an IMPORT.
+  There are NO export rows in this dataset.
+- All shipments are in HS chapter 17 (sugar and sugar products).
+  There is no data for other commodities (no rice, wheat, cotton...).
+- reporting_date ranges from 2025-01-01 to 2025-12-31 only.
+...
+If a question asks about data outside this scope (exports, non-sugar
+commodities, other years...), it CANNOT be answered from the data.
+"""
+\end{lstlisting}
+
+\begin{keyidea}{Refusal starts here, not in the refusal code}
+A model cannot decline a question about exports unless it knows the dataset has
+no exports. These sentences are what let the planner recognise
+``Pakistan's wheat exports in 2019'' as three separate impossibilities at once.
+Every one of these facts is checkable against the database, and I checked all of
+them (Section~\ref{sec:verify}): 2,000 rows, \code{trade\_type} is
+\code{'import'} for every row, dates run exactly 2025-01-01 to 2025-12-31,
+28 companies. The docstring calls them ``computed directly from the database'',
+and that is true.
+\end{keyidea}
+
+The third block, \code{TEXT\_TO\_SQL\_RULES}, is where a real bug was fixed. It
+now insists on wildcard matching for any name or free-text column, and forbids
+matching a name with \code{=}:
+
+\begin{lstlisting}[caption={One rule from TEXT\_TO\_SQL\_RULES, added after the bug in Section 13. The example name is deliberately not one the evaluation asks about.}]
+- Match names or free text with LIKE wrapped in % on both sides, for example
+  buyer LIKE '%Tamrin%' or country LIKE '%South Africa%'. Never match a name with =.
+\end{lstlisting}
+
+\subsection{The regulations corpus}
+
+Sixteen short Markdown documents in \file{data/regulations/}, covering HS-code
+basics, phytosanitary and SPS rules, customs-duty concepts, import
+documentation, anti-dumping and safeguards, letters of credit, the Pakistan
+Single Window, and one document per HS heading 1701 to 1704.
+
+\begin{honest}{These are authored summaries, not law, and the project says so}
+The corpus is plain-language explainers written for this demo. They reproduce no
+statute, no SRO number and no actual duty rate, and \file{\_README.md} in that
+folder states this plainly, as does \file{docs/EVALUATION.md}. This is an
+honest and necessary disclosure: the faithfulness metric measures grounding in
+\emph{this corpus}, not legal accuracy. A retrieval system that is 100\%
+faithful to a made-up document is 100\% useless for actual customs compliance.
+The project does not overclaim here, and it should not start.
+\end{honest}
+
+\subsection{Ingestion: chunking and embedding}
+
+\begin{sloppypar}
+\file{ingest/ingest.py} turns those documents into searchable vectors. Its
+cleverest function, \code{split\_sections}, walks a document line by line. It
+treats every second-level Markdown heading (a line starting with two hash
+characters) as a chunk boundary, and captures the top-level heading as the
+document title.
+\end{sloppypar}
+
+\begin{pseudocode}{ingest.run(), the whole pipeline}
+\Step{1. refuse to start unless credentials are present}
+\Step{2. for each *.md in regulations/, skipping files starting with "\_":}
+\Indent{read it; find the "\# " document title}
+\Indent{split on "\#\# " headings into (section\_title, section\_text)}
+\Indent{skip the front-matter block (section title == doc title)}
+\Indent{chunk id = "<filename stem>\#s<index>"}
+\Indent{embed\_text = "<doc title> :: <section title>\textbackslash n<section text>"}
+\Step{3. embed every embed\_text in batches of 5 (RETRIEVAL\_DOCUMENT)}
+\Step{4. normalize all vectors to unit length}
+\Step{5. write vectors.npz (matrix) + chunks.json (metadata, embed\_text dropped)}
+\end{pseudocode}
+
+Two details worth pausing on, because both are real craft:
+
+\begin{itemize}
+\item \textbf{The embedded text is not the stored text.} What gets embedded is
+  \code{"<doc title> :: <section title>\textbackslash n<section text>"}, so the
+  document and section headings contribute to the meaning of the vector. A
+  section called ``2. Reading the digits'' is nearly meaningless on its own; as
+  ``HS codes: structure and how classification works :: 2. Reading the digits''
+  it is findable. What is \emph{stored} and later shown to the reader is the
+  plain section text.
+\item \textbf{The task type is set.} Vertex embedding models accept a
+  \code{task\_type}. Ingestion passes \code{RETRIEVAL\_DOCUMENT}; a live query
+  passes \code{RETRIEVAL\_QUERY} (\file{app/tools.py}, line 51). The model
+  embeds a question and a passage into the same space but with the asymmetry
+  between them accounted for. Getting this backwards silently degrades every
+  search, and it is a common mistake.
+\end{itemize}
+
+The result, verified: 48 chunks from 16 documents, each a 768-dimensional
+vector, cached on disk so that neither the API nor the eval ever re-embeds the
+corpus.
+
+% =====================================================================
+\section{Embeddings and the vector store}
+\label{sec:vectorstore}
+
+\subsection{The retrieval path}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[node distance=7mm]
+  \node[box] (q) {retrieval\_query\\\scriptsize ``what is a phytosanitary\\\scriptsize certificate''};
+  \node[box, right=12mm of q, fill=accent!12] (emb) {\textbf{embed\_one()}\\\scriptsize Vertex predict REST\\\scriptsize task=RETRIEVAL\_QUERY};
+  \node[box, right=12mm of emb] (qv) {query vector\\\scriptsize 768 floats};
+  \node[box, right=12mm of qv] (norm) {normalize\\\scriptsize length := 1};
+  \node[store, above right=8mm and 12mm of norm] (mat) {matrix\\\scriptsize 48 x 768\\\scriptsize pre-normalized};
+  \node[box, below right=8mm and 12mm of norm, fill=accent!12] (dot) {\textbf{matrix @ q}\\\scriptsize 48 dot products\\\scriptsize = cosine scores};
+  \node[box, right=14mm of dot] (sort) {argsort\\\scriptsize take top 4};
+  \node[dec, right=12mm of sort] (thr) {score\\$\geq 0.55$?};
+  \node[box, above right=6mm and 12mm of thr] (keep) {\textbf{strong}\\\scriptsize -> evidence};
+  \node[box, below right=6mm and 12mm of thr, fill=warnred!12] (drop) {\textbf{dropped}\\\scriptsize too weak to cite};
+
+  \draw[flow] (q) -- (emb); \draw[flow] (emb) -- (qv); \draw[flow] (qv) -- (norm);
+  \draw[dflow] (mat) -- (dot);
+  \draw[flow] (norm) -- (dot);
+  \draw[flow] (dot) -- (sort); \draw[flow] (sort) -- (thr);
+  \draw[flow] (thr) -- node[lbl,above]{yes} (keep);
+  \draw[flow] (thr) -- node[lbl,below]{no} (drop);
+\end{tikzpicture}}
+\caption{The retrieval path. The threshold at the end is what makes refusal
+possible: retrieval always returns its top 4, so ``nothing relevant'' has to be
+\emph{defined}, and it is defined as ``nothing scored 0.55 or better''.}
+\label{fig:retrieval}
+\end{figure}
+
+\begin{keyidea}{Why the threshold is load-bearing}
+A nearest-neighbour search never fails. Ask it about wheat exports and it will
+cheerfully hand back the four \emph{least irrelevant} sugar documents, with
+scores like 0.31. Without a threshold those become ``evidence'' and the
+synthesizer is invited to hallucinate on top of them. \code{RETRIEVAL\_MIN\_SCORE
+= 0.55} converts a ranking into a judgment. The README records that an earlier
+version answered out-of-scope questions precisely because weak chunks were
+allowed through.
+\end{keyidea}
+
+\subsection{The store itself}
+
+\file{app/vectorstore.py} is 57 lines and needs no more. The search is four
+lines of arithmetic:
+
+\begin{lstlisting}[language=Python,caption={The entire search, from app/vectorstore.py.}]
+q = np.asarray(query_vec, dtype=np.float32)
+n = np.linalg.norm(q)
+if n:
+    q = q / n            # normalize the query
+scores = self.matrix @ q # 48 cosine similarities, one matrix-vector product
+order = np.argsort(-scores)[:top_k]
+\end{lstlisting}
+
+Because the stored matrix rows were normalized at save time and the query is
+normalized here, \code{matrix @ q} \emph{is} the vector of cosine similarities.
+The negation inside \code{argsort} is the standard trick for sorting descending.
+This is an \textbf{exact} search: it compares against all 48 chunks and cannot
+miss the true best match.
+
+\begin{keyidea}{The pgvector decision, defended}
+The obvious choice was pgvector, a PostgreSQL extension for vector search. The
+target machine has PostgreSQL 18 without the \code{vector} extension, no Docker,
+and no superuser path to build it. Rather than fight the infrastructure, the
+author wrote the 57 lines above. This is the correct call and should be argued
+confidently: for 48 chunks, brute force is instant and \emph{exact}, while an
+approximate-nearest-neighbour index would be slower to build, approximate, and a
+whole extra moving part. The honest trade-off, stated in
+\file{docs/ARCHITECTURE.md}: no ANN index and no server-side filtering, which
+would begin to matter at perhaps 100,000 chunks, not 48.
+\end{keyidea}
+
+\subsection{Why embeddings go through raw REST}
+
+\file{app/embeddings.py} does not use the \code{google-genai} SDK that the rest
+of the project uses for generation. Its docstring explains: the SDK does not
+expose \code{text-multilingual-embedding-002} uniformly in Vertex mode, so the
+module calls the \code{:predict} endpoint directly, minting a bearer token from
+the service-account credentials via \code{google.auth}.
+
+\begin{jargon}{Service account and bearer token}
+A service account is a non-human identity for a program, with a private key in a
+JSON file. The code exchanges that key for a short-lived \textbf{bearer token},
+a string sent in the \code{Authorization} header that proves the request is
+authorised. Tokens expire, hence the \code{if not \_creds.valid: refresh(...)}.
+\end{jargon}
+
+\begin{keyidea}{Nothing sensitive is in this repository}
+\file{app/config.py} reads the key's \emph{path} from the
+\code{GOOGLE\_APPLICATION\_CREDENTIALS} environment variable and nothing else.
+The key file lives outside the repo. \file{.env} is in \file{.gitignore}; only
+\file{.env.example} is committed, containing placeholders such as
+\code{GOOGLE\_APPLICATION\_CREDENTIALS=/absolute/path/to/your/service-account-key.json}.
+I scanned the tracked files for private keys, API keys and tokens and found
+none. This is the correct posture and it is worth stating in an interview.
+\end{keyidea}
+
+% =====================================================================
+\section{The planner: the agentic step}
+
+\file{app/planner.py} is 58 lines, and it is the reason the word ``agentic'' is
+justified. The system prompt is blunt about the boundary:
+
+\begin{lstlisting}[language=Python]
+PLANNER_SYSTEM = (
+    "You are a query planner for a trade-intelligence copilot. You decide which "
+    "tools are needed to answer a question. You do not answer the question yourself."
+)
+\end{lstlisting}
+
+The user prompt describes each of the three tools in one sentence, injects
+\code{DATASET\_SCOPE}, and demands JSON back:
+
+\begin{lstlisting}[language=Python,caption={The plan the model must return.}]
+{
+  "sql_needed": true/false,
+  "sql_question": "<question restated for SQL>" or null,
+  "retrieval_needed": true/false,
+  "retrieval_query": "<search query>" or null,
+  "hs_lookup": "<code or product name>" or null,
+  "in_scope": true/false,
+  "rationale": "<one sentence>"
+}
+\end{lstlisting}
+
+Two design points deserve credit. First, the planner may set several fields at
+once, which is what makes the multi-step questions work: compute a number with
+SQL \emph{and} explain the rule with retrieval. Second, it \emph{rewrites} the
+question per tool. \code{sql\_question} is the question restated for a
+SQL-writing model and \code{retrieval\_query} is a search query, which is a
+better input to an embedding model than a conversational sentence.
+
+Finally, \code{plan()} normalizes the result, coercing every field with
+\code{bool()} and \code{.get()} defaults, so a model that omits a key produces a
+usable plan rather than a \code{KeyError}. That defensiveness is appropriate: an
+LLM's JSON is untrusted input.
+
+\begin{honest}{\code{in\_scope} is computed on every single query and never read}
+The planner prompts for \code{in\_scope}, the model reasons about it, and
+\code{plan()} carefully normalizes it with \code{result.get("in\_scope", True)}.
+I grepped the entire codebase: \textbf{no other line ever reads it}. Refusal is
+driven purely by the evidence check in \file{app/answer.py}. So this field costs
+prompt and output tokens on every request and influences nothing.
+
+It is not harmless. It reads like a safety control, and someone reviewing the
+prompt would reasonably assume out-of-scope questions get short-circuited here.
+They do not. Two honest defences: it is visible in the trace and the UI, where
+it is genuinely useful for debugging; and it plausibly improves the plan by
+making the model reason about scope before choosing tools, an effect similar to
+asking for a rationale. But that is a hypothesis about prompting, not a
+mechanism, and it is not what the field's name implies. Either wire it in (an
+in-scope=false question could skip straight to refusal and save two model calls)
+or delete it and keep the rationale.
+\end{honest}
+
+% =====================================================================
+\section{The three tools}
+
+\subsection{Tool 1: text-to-SQL}
+
+\code{tools.text\_to\_sql()} assembles the schema DDL, the scope facts and the
+SQL rules into one prompt, asks for \code{\{"sql": ..., "reason": ...\}}, and
+then executes it through the guard. Its error handling is a good example of
+distinguishing failure modes:
+
+\begin{lstlisting}[language=Python]
+try:
+    result["rows"] = db.run_select(sql)
+except db.SqlGuardError as e:
+    result["error"] = f"guard_rejected: {e}"
+except Exception as e:  # execution error (bad column, syntax)
+    result["error"] = f"execution_error: {e}"
+\end{lstlisting}
+
+``The model tried something forbidden'' and ``the model wrote a broken query''
+are different events and are recorded differently. Note also that the model is
+permitted to answer \code{sql: null} when it judges the question unanswerable
+from the tables, which becomes \code{no\_sql\_generated} and, downstream, no
+evidence and a refusal.
+
+\subsection{Tool 2 and 3, briefly}
+
+\code{relevant\_chunks()} is a thin pair around the store: retrieve the top
+\code{k}, then split into all hits and those clearing the threshold. Both halves
+are returned, which is what lets the trace show a reader ``here is what came
+back and here is what I threw away''.
+
+\code{hs\_lookup()} is the only tool with no model in it at all: a
+parameterised SQL join across the three hierarchy tables, matching a code prefix
+(\code{term\%}) or a name substring (\code{\%term\%}), capped at 25 rows. Note
+it uses \code{?} placeholders, so it is safe from SQL injection even though the
+search term originates from an LLM.
+
+\subsection{The SQL guard: the security boundary}
+\label{sec:guard}
+
+This is the most safety-critical code in the project, because an LLM is writing
+executable statements against a database.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=7mm]
+  \node[box] (in) {SQL text from the LLM};
+  \node[dec, below=of in] (d1) {empty?};
+  \node[dec, below=of d1] (d2) {contains \code{--}\\or \code{/*}?};
+  \node[dec, below=of d2] (d3) {a \code{;} inside\\the body?};
+  \node[dec, below=of d3] (d4) {starts with SELECT\\or WITH?};
+  \node[dec, below=of d4] (d5) {a forbidden\\keyword?};
+  \node[box, below=of d5, fill=warnred!12] (conn) {\textbf{Layer 2: the connection}\\\scriptsize mode=ro\&immutable=1\\\scriptsize PRAGMA query\_only = ON};
+  \node[box, below=of conn, fill=warnred!12] (exec) {\textbf{Layer 3: the row cap}\\\scriptsize fetchmany(200)};
+  \node[box, right=32mm of d3, fill=warnred!12] (err) {\textbf{SqlGuardError}\\\scriptsize nothing ever executes};
+
+  \draw[flow] (in) -- (d1);
+  \draw[flow] (d1) -- node[lbl,right]{no} (d2);
+  \draw[flow] (d2) -- node[lbl,right]{no} (d3);
+  \draw[flow] (d3) -- node[lbl,right]{no} (d4);
+  \draw[flow] (d4) -- node[lbl,right]{yes} (d5);
+  \draw[flow] (d5) -- node[lbl,right]{no} (conn);
+  \draw[flow] (conn) -- node[lbl,right]{execute} (exec);
+  \draw[flow] (d1) -| node[lbl,pos=0.22,above]{yes} (err);
+  \draw[flow] (d2) -| node[lbl,pos=0.22,above]{yes} (err);
+  \draw[flow] (d3) -- node[lbl,above]{yes} (err);
+  \draw[flow] (d4) -| node[lbl,pos=0.22,above]{no} (err);
+  \draw[flow] (d5) -| node[lbl,pos=0.22,above]{yes} (err);
+\end{tikzpicture}
+\caption{\code{validate\_select()} is layer 1: five gates, any of which aborts
+before anything executes. Layers 2 and 3 assume layer 1 was bypassed anyway.}
+\label{fig:guard}
+\end{figure}
+
+The layering is the actual insight, and \file{app/db.py} says so in a comment
+(``Belt and braces''):
+
+\begin{enumerate}
+\item \textbf{The keyword and shape guard.} Reject comments (which can hide a
+  payload), reject a semicolon anywhere but a single optional trailing one
+  (which blocks \code{SELECT 1; DROP TABLE companies}), require the statement to
+  begin \code{select} or \code{with}, and reject a regex of write and DDL
+  keywords including \code{pragma}, \code{attach} and \code{vacuum}.
+\item \textbf{The connection.} \code{sqlite3.connect("file:...?mode=ro\&immutable=1",
+  uri=True)} opens the file read-only, and \code{PRAGMA query\_only = ON} tells
+  SQLite itself to reject writes.
+\item \textbf{The row cap.} \code{fetchmany(200)} means a \code{SELECT *} with
+  no \code{LIMIT} cannot pull the whole table into memory or into a prompt.
+\end{enumerate}
+
+\begin{keyidea}{Why any one layer alone would be inadequate}
+A keyword blocklist is a blocklist: someone will always think of a word you
+forgot. A read-only connection would still allow a catastrophic
+\code{SELECT} that exhausts memory. The row cap does nothing about writes. The
+argument is not that each layer is strong; it is that a bypass must defeat all
+three, and \file{tests/test\_sql\_guard.py} asserts each independently,
+including that a raw \code{CREATE TABLE} on the connection raises
+\code{sqlite3.OperationalError} even with the guard skipped entirely.
+\end{keyidea}
+
+\begin{honest}{The keyword regex reads string literals, and rejects valid queries}
+\code{\_FORBIDDEN} is applied to the whole query text, with no awareness of SQL
+string literals. Any forbidden word \emph{inside quotes} triggers it. I ran this
+against the real guard and confirmed it:
+
+\begin{lstlisting}[language=Python,caption={Verified against app/db.py. The first three are legitimate read-only queries.}]
+"SELECT * FROM companies WHERE name LIKE '%Create%' LIMIT 5"       -> REJECTED
+"SELECT * FROM companies WHERE name LIKE '%Update Traders%'"       -> REJECTED
+"SELECT SUM(usd) FROM trade_transactions WHERE seller LIKE '%Delete Foods%'" -> REJECTED
+"SELECT COUNT(*) FROM trade_transactions WHERE buyer LIKE '%Orvella%'"      -> accepted
+\end{lstlisting}
+
+A real Pakistani importer named ``Create Foods'' or ``Update Traders'' would be
+permanently unqueryable, and the failure surfaces as
+\code{guard\_rejected}, which is opaque to the user.
+
+Now the fair defence, and it is a strong one: this fails \emph{safe}. A
+false positive costs an answer; a false negative costs the database. Given the
+choice, this is the right direction to err, and no company in the actual dataset
+trips it. But it is a real limitation with a known fix (parse the SQL and inspect
+only non-literal tokens, or use \code{sqlite3}'s \code{authorizer} callback,
+which enforces at the engine level and cannot be fooled by quoting at all). Say
+this in an interview before the interviewer says it to you.
+\end{honest}
+
+% =====================================================================
+\section{Refusal, synthesis and citation}
+
+\subsection{The deterministic refusal}
+
+\file{app/answer.py} contains a nine-line function that carries a great deal of
+weight:
+
+\begin{lstlisting}[language=Python]
+def deterministic_refusal(sql_result, chunks, hs_result) -> bool:
+    """True when there is simply no evidence to answer from."""
+    has_rows = bool(sql_result and sql_result.get("rows"))
+    has_chunks = bool(chunks)
+    has_hs = bool(hs_result and hs_result.get("matches"))
+    return not (has_rows or has_chunks or has_hs)
+\end{lstlisting}
+
+If every tool came back empty, refuse now, before the synthesis call.
+
+\begin{keyidea}{A cheap check beats an expensive one}
+The alternative is to send ``here is no evidence, please refuse'' to a language
+model and hope. This version cannot be argued out of it, cannot be
+prompt-injected, costs zero tokens and zero seconds, and returns a fixed string.
+It is faster, cheaper and more reliable, all three at once. That is a rare
+trade in engineering and it is worth naming.
+\end{keyidea}
+
+\subsection{How refusal actually happened in the real run}
+
+I examined all six unanswerable items in \file{eval/transcripts.json} to see
+which mechanism fired. All six refused, giving the published 1.00 precision and
+1.00 recall. Every one took the deterministic path, and every trace was exactly
+two steps: \code{['plan', 'refusal']}.
+
+\begin{honest}{``Deterministic'' refusal is downstream of an LLM's judgment}
+Look closely at that trace. \code{['plan', 'refusal']} means \textbf{no tool ran
+at all}. The deterministic guard did not sift through evidence and find it
+wanting; it fired because the planner returned \code{sql\_needed: false},
+\code{retrieval\_needed: false}, \code{hs\_lookup: null} and gathered nothing.
+(The planner also set \code{in\_scope: false} on all six, correctly, and as
+established, nothing read it.)
+
+So the refusal is deterministic in its \emph{final step} and LLM-driven in its
+\emph{decisive} one. The guard is a reliable backstop for ``the tools found
+nothing''; it is not what recognised the question as out of scope. The planner
+did that, and the planner is a language model.
+
+This matters concretely. Consider \code{refuse-06}, ``What was the total value
+of molasses exports?''. Molasses (HS 1703) \emph{is} in the corpus and in the
+HS hierarchy. Had the planner set \code{hs\_lookup: "molasses"}, that tool would
+have returned real matching rows, \code{has\_hs} would be true, the
+deterministic guard would \emph{not} have fired, and the refusal would have
+rested entirely on the synthesizer noticing that rows about molasses imports
+cannot answer a question about molasses exports. It did not come to that, and
+6/6 is a real result. But the mechanism has an LLM on its critical path, and
+``enforced deterministically'' oversells it slightly. The correct claim is:
+``the refusal is emitted by a deterministic check, which fires when the planner
+selects no tools; on the eval set the planner selected no tools every time.''
+\end{honest}
+
+\subsection{Synthesis}
+
+\code{synthesize()} builds one evidence block containing the SQL query, any SQL
+error, the rows as JSON (capped at 50), the HS-lookup matches (capped at 25) and
+the regulation chunks with their ids. It then instructs:
+\emph{Answer ONLY from the evidence above. Do not use outside knowledge for
+facts, numbers, or specific rules.} And it demands JSON with \code{supported},
+\code{answer}, \code{cited\_chunks} and \code{used\_sql}.
+
+Note the belt-and-braces on the way out: if the model says
+\code{supported: false} but writes no text, the code substitutes
+\code{REFUSAL\_TEXT}. The system never returns an empty answer.
+
+\subsection{Citations, and one latent problem}
+
+\file{app/agent.py} assembles the citation block: the SQL, up to 20 rows, up to
+25 HS matches, and the full text of every chunk the model actually cited
+(filtered by an intersection with \code{cited\_chunks}). This block is what the
+UI renders and, crucially, what the eval's judge is later shown.
+
+\begin{honest}{The judge's view of the evidence depends on the model's self-report}
+One line in \file{app/agent.py} deserves scrutiny:
+
+\begin{lstlisting}[language=Python]
+"sql_rows": (sql_result.get("rows") or [])[:20] if (sql_result and result["used_sql"]) else [],
+\end{lstlisting}
+
+\code{used\_sql} is not observed by the code. It is a field the \emph{synthesizer
+model} returned about itself. If the model uses a number from the SQL rows but
+reports \code{used\_sql: false}, the rows are dropped from the citations, and
+the judge, which reconstructs evidence from the citations, then sees an answer
+containing a number with no source for it, and correctly calls it unfaithful.
+The answerer would be right and the harness would score it wrong.
+
+This is exactly the class of bug the project already found and fixed once: the
+README records that HS-lookup rows were originally missing from the citations,
+so the judge flagged good answers as unfaithful until they were added. The same
+structural weakness remains for \code{sql\_rows}, gated on a self-report rather
+than on whether rows existed.
+
+Credit where due: I checked all 28 transcripts for a case where SQL returned
+rows but \code{sql\_rows} was empty in the citations, and found \textbf{zero}.
+The bug did not bite in the published run (15 SQL steps returned rows, and all
+15 items cite them), so the 95.5\% figure is not contaminated. It is a latent fragility, not an active error, and the fix is one
+line: gate on \code{sql\_result.get("rows")} rather than on
+\code{result["used\_sql"]}.
+\end{honest}
+
+% =====================================================================
+\section{Cost accounting, the server and the UI}
+
+\file{app/llm.py} wraps generation and meters it. A \code{Usage} record holds a
+model name and input and output token counts, and prices itself against the
+table in \file{app/config.py}. A \code{CostMeter} accumulates \code{Usage}
+records across the three or four calls a single question makes, and one meter is
+threaded through the whole request, which is why the API can report a genuine
+per-query cost rather than an estimate.
+
+\begin{honest}{The prices are hardcoded list rates, not billed amounts}
+\code{PRICING} in \file{app/config.py} holds figures such as \$0.30 per million
+input tokens for flash. The token \emph{counts} are real, taken from the API's
+own \code{usage\_metadata}. The dollar figures are published list prices copied
+into a dict, overridable by environment variable, and the comment says
+``Approximate published rates''. So \$0.00093 per query is a real token count
+multiplied by an assumed price. It is not read from a billing API and will
+silently drift if Google changes pricing. This is a reasonable engineering
+choice, honestly commented, and worth stating precisely rather than saying
+``the system tracks cost''.
+\end{honest}
+
+\code{\_parse\_json} is small and pragmatic: it strips Markdown code fences and,
+if the model wrapped its JSON in chatter, trims to the outermost braces. Ugly,
+necessary, and exactly what everyone who has shipped an LLM feature writes.
+
+\file{app/server.py} is 40 lines: \code{GET /health} reports whether the
+database and vector files are present and whether credentials are configured
+(without revealing them), \code{POST /ask} calls the agent, and \code{GET /}
+returns the UI.
+
+\begin{jargon}{FastAPI}
+A Python web framework. A \textbf{web framework} handles the plumbing of
+receiving HTTP requests and returning responses, so the author writes only the
+logic. The \code{AskRequest} class declares that \code{/ask} expects
+\code{\{"question": "..."\}}, and FastAPI rejects malformed requests before any
+code runs.
+\end{jargon}
+
+The UI is a single self-contained HTML file with no build step and no
+dependencies. It renders the answer with a grounded or refused badge, the SQL
+executed, the rows, the HS matches, the cited chunk text, the full tool-call
+trace, and the token count, cost and latency.
+
+\begin{keyidea}{The UI shows the trace, and that is a statement of intent}
+Most demos show the answer. This one shows the plan, every tool call, what
+retrieval returned \emph{and what it discarded}, the exact SQL, and the cost. A
+user can audit any answer without reading the code. Making the machinery visible
+is the same instinct as publishing the eval.
+\end{keyidea}
+
+\begin{honest}{\code{jinja2} is a dependency that is never used}
+\file{requirements.txt} pins \code{jinja2==3.1.6} under the comment ``Config +
+templating''. \file{app/server.py} reads the template with
+\code{Path(...).read\_text()} and does no templating at all. I grepped every
+Python file: jinja2 is never imported. It is a leftover from an approach that
+was abandoned, and the file even lives in a folder called \file{templates/}
+which is never templated. Harmless, but it is dead weight in a dependency list
+and the sort of thing worth removing before someone asks about it.
+\end{honest}
+
+% =====================================================================
+\section{The evaluation layer}
+
+This is the part of the project worth the most in an interview.
+
+\subsection{The test set}
+
+\file{eval/testset.jsonl} holds 28 items, one JSON object per line.
+
+\begin{jargon}{JSONL}
+JSON Lines: one complete JSON object per line of the file. Handy for test sets
+because you can append an item, or read them one at a time, without parsing the
+whole file.
+\end{jargon}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Group} & \textbf{n} & \textbf{Gold answer is} & \textbf{Scored on} \\
+\midrule
+\code{sql} & 12 & a number (with tolerance) or a substring & SQL correctness \\
+\code{retrieval} & 7 & the document(s) that should be found & retrieval hit rate \\
+\code{multi} & 3 & both a number and a document & both \\
+\code{refusal} & 6 & nothing; it must refuse & refusal precision/recall \\
+\bottomrule
+\end{tabular}
+\caption{The 28 items. Every item is also judged for faithfulness unless it was
+supposed to be refused. SQL correctness is scored over \code{sql} plus
+\code{multi}, which is $12 + 3 = 15$: that is where ``15/15'' comes from.}
+\end{table}
+
+The tolerance design is careful: \code{rel\_tol: 0.0} for integer counts
+(a count is exactly right or it is wrong) and \code{rel\_tol: 0.01} for money,
+absorbing rounding in how the model formats a dollar figure.
+
+\subsection{The harness}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{
+\begin{tikzpicture}[node distance=7mm]
+  \node[box] (ts) {\file{testset.jsonl}\\\scriptsize 28 items + gold};
+  \node[box, right=12mm of ts, fill=accent!12] (ask) {\textbf{agent.ask()}\\\scriptsize the real copilot,\\\scriptsize live API};
+  \node[box, right=12mm of ask, fill=accent!12] (judge) {\textbf{judge}\\\scriptsize gemini-2.5-pro\\\scriptsize faithful?};
+  \node[store, right=12mm of judge] (tr) {\file{transcripts.json}\\\scriptsize answer + trace\\\scriptsize + cost + verdict};
+
+  \node[box, below=20mm of ts, fill=warnred!12] (metrics) {\textbf{compute\_metrics()}\\\scriptsize OFFLINE, no API};
+  \node[store, left=10mm of metrics] (hl) {\file{human\_labels.json}\\\scriptsize hand labels (pending)};
+
+  \node[box, right=14mm of metrics] (m1) {SQL correctness\\\scriptsize number/substring vs gold};
+  \node[box, right=12mm of m1] (m2) {retrieval hit rate\\\scriptsize gold doc retrieved?};
+  \node[box, below=6mm of m1] (m3) {refusal matrix\\\scriptsize tp/fp/tn/fn};
+  \node[box, below=6mm of m2] (m4) {faithfulness\\\scriptsize + judge vs human};
+  \node[store, right=12mm of m2, yshift=-9mm] (res) {\file{results.json}\\\scriptsize the published numbers};
+
+  \draw[flow] (ts) -- (ask); \draw[flow] (ask) -- (judge); \draw[flow] (judge) -- (tr);
+  \draw[dflow] (tr.south) -- ++(0,-7mm) -| node[lbl,pos=0.25,above]{saved once, scored forever} (metrics.north);
+  \draw[flow] (hl) -- (metrics);
+  \draw[flow] (metrics) -- (m1); \draw[flow] (metrics) -- (m3);
+  \draw[flow] (m1) -- (m2); \draw[flow] (m3) -- (m4);
+  \draw[flow] (m2) -- (res); \draw[flow] (m4) -- (res);
+\end{tikzpicture}}
+\caption{The harness, split in two on purpose. \code{--run} (top) is the
+expensive half and happens once. \code{--metrics} (bottom) recomputes every
+published number from the saved transcripts and costs nothing.}
+\label{fig:eval}
+\end{figure}
+
+\begin{keyidea}{The two-phase split is the best structural decision in the project}
+Because the transcripts are saved, the scoring can be re-run, corrected,
+extended and \emph{independently checked} without spending another cent on the
+API. It also means the published results are auditable: anyone can recompute
+them from the committed transcripts. I did exactly that
+(Section~\ref{sec:verify}), and it is only possible because of this split.
+\end{keyidea}
+
+\subsection{How each metric is computed}
+
+\begin{itemize}
+\item \textbf{SQL correctness.} \code{extract\_numbers()} regex-scrapes every
+  number out of the answer \emph{text}, strips commas, and compares each against
+  gold within tolerance; or, for a \code{contains} gold, does a lowercase
+  substring test. Note this scores the \textbf{whole pipeline}: planner, SQL
+  generation, guard, execution and synthesis all had to work for the right
+  number to appear in the prose.
+\item \textbf{Retrieval hit.} Find the \code{retrieval} step in the trace, take
+  the chunk ids that came back, strip each at the \code{\#} to get a document
+  name, and ask whether any gold document is among them. Note it uses
+  \emph{all} hits, not just those above the threshold.
+\item \textbf{Refusal.} A confusion matrix over all 28 items, comparing
+  ``refused'' (\code{supported == false}) against \code{expect\_refusal}.
+\item \textbf{Faithfulness.} The judge's verdict, counted only over items that
+  were answered and were not supposed to be refused (22 of the 28).
+\item \textbf{Judge vs human.} For each of the 12 hand-labelled ids, does the
+  author's label match the judge's verdict?
+\end{itemize}
+
+\begin{jargon}{Precision and recall}
+Two ways of being wrong. Here, \textbf{recall} = of the questions that should
+have been refused, how many were? (Did it catch them all?) \textbf{Precision} =
+of the times it refused, how often was refusing correct? (Is it refusing things
+it could have answered?) A system that refuses everything has perfect recall and
+terrible precision. You need both, which is why both are reported.
+\end{jargon}
+
+\subsection{The published results}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Metric} & \textbf{Result} & \textbf{My verification status} \\
+\midrule
+SQL answer correctness & 15 / 15 = 100\% & recomputed offline; gold re-derived from DB \\
+Retrieval hit rate & 8 / 10 = 80\% & recomputed offline; cause confirmed \\
+Refusal precision / recall & 1.00 / 1.00 & recomputed offline; mechanism inspected \\
+Judge faithfulness & 21 / 22 = 95.5\% & recomputed offline; the miss read \\
+Judge vs human agreement & pending & not labelled for this run \\
+Mean cost per query & \$0.00093 & recomputed; rests on list-price table \\
+Total cost of the run & \$0.0260 & recomputed \\
+Latency p50 / p95 & 9.0 s / 27.0 s & recomputed; 3 items include 429 waits \\
+\bottomrule
+\end{tabular}
+\caption{The README's headline table, with what I could and could not confirm.
+Section~\ref{sec:verify} is precise about the difference.}
+\end{table}
+
+% =====================================================================
+\section{What I verified by actually running it}
+\label{sec:verify}
+
+Claims in a README are assertions. Here is what I executed, and what it proved.
+
+\begin{keyidea}{The live run was re-done when the data was replaced}
+On 2026-10-14 the synthetic database replaced the original data, and
+\code{python -m eval.run\_eval --run} was run once against the live API (28
+items, about \$0.026), along with the four live tests. Everything else below
+runs offline.
+\end{keyidea}
+
+\subsection{The gold answers are genuinely ground truth}
+
+The strongest claim in the project is that the gold numbers come from the
+database rather than from anybody's judgment. They are written by
+\file{eval/build\_testset.py}, which runs a query for each one, and I re-derived
+them with independent queries against the shipped \file{data/trade.sqlite}.
+\textbf{They reproduce exactly.} For example: total USD 274,995,234.91; row count
+2,000; China 208 shipments; the top country by value is Brazil at
+112,021,544.46; Orvella Foods 191 shipments; HS 1702.1100 227 shipments; HS 1704
+total 11,665,069.33.
+
+I also confirmed every scope fact asserted in \code{DATASET\_SCOPE}:
+\code{trade\_type} has exactly one distinct value, \code{'import'};
+\code{reporting\_date} runs 2025-01-01 to 2025-12-31; there are 28 distinct
+countries and 28 companies. Two builds of the database are byte-identical.
+
+\subsection{The metrics reproduce exactly}
+
+I created a clean virtual environment, installed the dependencies, and ran
+\code{python -m eval.run\_eval --metrics} with credentials explicitly unset, so
+no API call was possible. It recomputed every metric from the committed
+transcripts and produced output \textbf{byte-identical} to the committed
+\file{eval/results.json}: 15/15 SQL, 8/10 retrieval, refusal 6 tp / 0 fp / 22 tn
+/ 0 fn, faithfulness 21/22, agreement null (no labels yet), cost \$0.025975, p50
+8,991 ms.
+
+\subsection{The test suite}
+
+\code{pytest} with no credentials: \textbf{29 passed, 4 skipped}. That matches
+the README's claim exactly (``33 tests total: 29 run offline ... 4 are marked
+\code{live}''). The live tests skipped themselves cleanly via the
+\code{conftest.py} hook rather than failing, and with a Vertex key set all four
+pass against the API.
+
+\subsection{So is ``15/15'' verified?}
+
+\begin{honest}{Precisely what the 15/15 rests on}
+All three links in the chain are verified for the current numbers:
+
+\begin{enumerate}
+\item \textbf{The gold answers are correct.} Verified independently against the
+  database. All 13 numbers exact.
+\item \textbf{The scoring of the transcripts yields 15/15.} Verified by
+  re-running the scorer offline; byte-identical output.
+\item \textbf{The transcripts are the output of a real live run against Gemini.}
+  Verified: they were produced by the 2026-10-14 run described above.
+\end{enumerate}
+
+That run hit Vertex rate limits. Three items (\code{sql-10}, \code{sql-11},
+\code{ret-07}) waited out \code{429 RESOURCE\_EXHAUSTED} responses, so their
+recorded latencies (27, 46 and 30 seconds) include waiting. That is why the p95
+is reported twice: 27.0 s as measured, 12.5 s without those three. Nothing was
+re-run to make a number look better; the two retrieval misses and the one judged
+unfaithful answer are all still in the transcripts.
+\end{honest}
+
+\subsection{What the two retrieval misses actually were}
+
+The README says the 2 misses were questions answered from the HS-lookup tool
+instead of retrieval. I checked the traces of all 10 retrieval-scored items.
+\code{ret-07} and \code{multi-01} have \textbf{no retrieval step in the trace at
+all}: the planner never invoked retrieval, so no chunk could be retrieved, so
+the gold document could not be hit. The other 8 all retrieved their gold
+document. The README's account is accurate.
+
+\begin{honest}{The retrieval metric conflates two different failures}
+\code{retrieval\_hit()} returns \code{False} both when retrieval ran and fetched
+the wrong document, and when retrieval never ran. Those are different bugs with
+different fixes: a bad embedding versus a bad routing decision. Both of this
+project's misses are the second kind, which means \textbf{80\% is a planner
+score, not a retrieval score}. The retrieval component did not miss a single
+document it was actually asked to find; it went 8 for 8. The metric's name
+points at the wrong component, and the fix the README proposes (make the planner
+prefer retrieval for definitional questions) is aimed correctly even though the
+metric is not.
+\end{honest}
+
+\subsection{The one unfaithful verdict, read in full}
+
+The single unfaithful verdict is \code{sql-12}, ``How many shipments were
+recorded under HS code 1702.1100 (lactose)?''. The answer gave the right count,
+227, and repeated the question's own label. The judge ruled unfaithful, with the
+recorded reason: \emph{``The evidence supports the number of shipments (227) for
+the given HS code, but it does not provide the description `(lactose)' for that
+code. This description is an invented detail not found in the evidence.''}
+
+\begin{keyidea}{Both readings are defensible, and that is the point}
+The judge is literally correct: the evidence did not establish that mapping. A
+human could fairly call it faithful: the load-bearing number was right and the
+label was user-supplied. On the first version of the project the author
+hand-labelled the same kind of answer faithful, and that was the single
+disagreement in an 11/12 judge check. For the current run the 12-item subset has
+not been labelled yet, so the agreement is reported as null instead of being
+carried over. Until it is redone, read 95.5\% as ``the judge's view''.
+\end{keyidea}
+
+\begin{keyidea}{Enumeration is where grounded models leak}
+In the first version, the other two unfaithful verdicts were the same failure:
+asked to enumerate what an HS heading covers, the model padded its list with
+plausible product names that were not in the evidence rows. Point-fact answers
+stayed grounded; ``list everything under this heading'' is where the model
+reached past its evidence, because a short list \emph{feels} incomplete. In the
+synthetic re-run both of those questions (\code{ret-07}, \code{multi-01}) were
+judged faithful, most likely because the synthetic HS hierarchy is small enough
+for the lookup to return every item. That is luck, not a fix. The fix is
+structural, not a stronger instruction: post-filter enumerated items against the
+evidence rows.
+\end{keyidea}
+
+% =====================================================================
+\section{Consolidated honest findings}
+\label{sec:findings}
+
+Everything below is either verified by me or read directly out of the source.
+The first three are the project's own, already documented in its README, and
+they are here because they are good.
+
+\subsection{Findings the project already owns, and gets right}
+
+\begin{enumerate}
+\item \textbf{The wildcard bug.} In the first version, text-to-SQL matched one
+  importer's full company name with no wildcards, matched nothing, and reported
+  0 shipments for an importer that had dozens. The answer was fluent and completely wrong. The gold number
+  caught it instantly; the fix was a sharper instruction in the schema prompt.
+  This is the single best story in the project, because it is a concrete
+  demonstration that the eval earns its keep.
+\item \textbf{Faithful is not correct.} That zero-row answer was judged
+  \emph{faithful}: it accurately reported what its query returned. This is why
+  grounding and ground-truth correctness are measured separately. Anyone
+  reporting a single ``accuracy'' number for a RAG system has not thought this
+  through.
+\item \textbf{The judge was blind to evidence the answerer used.} The first run
+  flagged HS-lookup answers as unfaithful because the judge could not see the
+  HS rows. Fixing the plumbing turned the remaining flags into genuine findings.
+  A harness bug that manufactures failures is as dangerous as one that hides
+  them.
+\end{enumerate}
+
+\subsection{Findings from this review}
+
+\begin{enumerate}
+\item \textbf{\code{in\_scope} is dead.} Computed on every query, read by
+  nothing. Reads like a safety control, is not one.
+\item \textbf{The SQL guard rejects valid queries whose string literals contain
+  a keyword.} Verified by execution. Fails safe, but a company named ``Create
+  Foods'' is unqueryable.
+\item \textbf{\code{sql\_rows} citation is gated on the model's self-reported
+  \code{used\_sql}.} A latent repeat of a bug already fixed once elsewhere.
+  Verified not to have affected the published run (zero instances).
+\item \textbf{``Deterministic refusal'' is deterministic in its last step
+  only.} The decisive choice is the planner's, and the planner is an LLM.
+\item \textbf{The retrieval hit rate is really a planner score.} Both misses were
+  routing failures; retrieval went 8 for 8 on what it was asked to find.
+\item \textbf{\code{jinja2} is an unused dependency.}
+\item \textbf{Costs are list prices in a dict, not billed amounts.} Token counts
+  are real; the dollar conversion is an assumption that will drift.
+\end{enumerate}
+
+\subsection{Limitations the project states, and should keep stating}
+
+\begin{itemize}
+\item \textbf{One run, 28 items, temperature 0.} Every number here is a single
+  sample. Temperature 0 makes the models near-deterministic but not guaranteed
+  identical, and 15/15 on 15 questions is a good result with wide error bars.
+  The honest reading is ``the paths work'', not ``it is 100\% accurate''.
+\item \textbf{SQL correctness is scraped from prose.} Any number within
+  tolerance anywhere in the answer scores a hit, so a wrong answer containing
+  the right number would pass. \file{docs/EVALUATION.md} states this itself.
+\item \textbf{The judge and the answerer are the same model family.} Shared
+  blind spots are possible; the human labels only partly cover this. A judge
+  from a different family would be a stronger cross-check.
+\item \textbf{The corpus is authored summaries, not primary law.}
+\item \textbf{Latency is high (p50 about 9 s)} because three or four model calls
+  run in sequence. Merging planning with text-to-SQL, and running independent
+  tools concurrently, would cut it materially. The code runs the tools strictly
+  one after another even when they are independent.
+\end{itemize}
+
+% =====================================================================
+\section{Defending this project in an interview}
+
+\begin{keyidea}{The five things to say}
+\begin{enumerate}
+\item \textbf{Lead with the eval, not the copilot.} Anyone can wire an LLM to a
+  database. The differentiator is 28 items with gold answers computed from the
+  database, published metrics including the failures, and a judge checked
+  against hand labels.
+\item \textbf{Tell the wildcard story.} A fluent answer said 0 shipments; the
+  truth was dozens; the gold number caught it in one run. That is the whole argument
+  for evaluation in thirty seconds.
+\item \textbf{Separate faithful from correct}, and explain that the same bug
+  proved why: the wrong answer was perfectly faithful to its own wrong query.
+\item \textbf{Defend the hand-built vector store.} 48 chunks, exact brute-force
+  search, one matrix-vector product, no server. pgvector was unavailable; for
+  this corpus the simpler thing is also the better thing.
+\item \textbf{Volunteer the limits.} 80\% retrieval is really a routing problem.
+  Enumeration is where grounding leaks. \code{in\_scope} is dead code. Say these
+  before you are asked.
+\end{enumerate}
+\end{keyidea}
+
+\subsection{Questions you should expect}
+
+\begin{itemize}
+\item \emph{``What stops the model dropping your tables?''} Three layers:
+  keyword and shape guard, a connection opened \code{mode=ro\&immutable=1} with
+  \code{PRAGMA query\_only}, and a row cap. A test asserts a write fails even
+  with the guard bypassed. Then volunteer the string-literal false positive.
+\item \emph{``How do you know it refuses instead of guessing?''} Six unanswerable
+  items, all refused, zero false refusals. Then be precise: the deterministic
+  check emits the refusal, but it fires because the planner chose no tools.
+\item \emph{``Isn't using an LLM to grade an LLM circular?''} Yes, which is why
+  the judge is checked against 12 hand labels: 11/12 on the first version, with
+  the one disagreement published, and redone label by label for the synthetic
+  re-run rather than carried over.
+\item \emph{``Faithfulness is 95.5\%; why should I trust it?''} Not fully, yet:
+  the judge has not been checked against hand labels for this run, and its one
+  miss is a judgment call about a label the user supplied. On the first version
+  it was 86\%, and two of the three misses were the model padding an enumeration
+  beyond its evidence, a real failure mode with a structural fix.
+\item \emph{``Would this scale?''} The vector store would need a real ANN index
+  somewhere around six figures of chunks. The bigger constraint is latency:
+  three or four sequential model calls, about 9 seconds. Merge the planner with
+  text-to-SQL and parallelise independent tools.
+\end{itemize}
+
+% =====================================================================
+\section{Glossary}
+
+\begin{description}[leftmargin=!,labelwidth=3.4cm,style=nextline]
+\item[Agentic retrieval] Retrieval where a model first decides which sources to
+  consult rather than always running one fixed search.
+\item[Bearer token] A short-lived string proving a request is authorised,
+  minted here from a service-account key.
+\item[Chunk] One retrievable piece of a document; here, one \code{\#\#} section.
+\item[Cosine similarity] How closely two vectors point the same way; 1.0 is
+  identical direction. With normalized vectors it is just the dot product.
+\item[Embedding] A list of numbers (768 here) representing the meaning of text.
+\item[Faithfulness] Whether an answer is supported by the evidence it was given.
+  Not the same as correctness.
+\item[Ground truth] The known-correct answer, established independently. Here,
+  computed by querying the database directly.
+\item[Hallucination] Fluent, plausible, false model output.
+\item[HS code] International product classification. This dataset is chapter 17,
+  sugar.
+\item[JSONL] One JSON object per line.
+\item[LLM-as-judge] Using a model to grade another model's output.
+\item[Precision / recall] Of the refusals, how many were right / of the things
+  needing refusal, how many were caught.
+\item[RAG] Retrieval-augmented generation: fetch the facts, then let the model
+  write using only those facts.
+\item[SQL guard] The code that refuses to execute anything but a single, safe
+  \code{SELECT}.
+\item[SQLite] A complete relational database that is a single file, no server.
+\item[Text-to-SQL] Having a model translate a question into a database query and
+  running it for real.
+\item[Vector store] The structure holding embeddings and searching them; here a
+  48x768 numpy matrix.
+\end{description}
+
+\vfill
+\begin{center}
+\small\itshape
+Built from the source at \file{trade-intelligence-copilot}. Every metric quoted
+was recomputed offline from the committed transcripts, and every gold answer
+re-derived from the shipped database, before it was written down.
+\end{center}
+
+\end{document}

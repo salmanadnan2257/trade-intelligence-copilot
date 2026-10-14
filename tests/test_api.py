@@ -53,4 +53,4 @@ def test_ask_endpoint_live_grounded():
     assert r.status_code == 200
     body = r.json()
     assert body["supported"] is True
-    assert "825" in body["answer"]
+    assert "208" in body["answer"]
