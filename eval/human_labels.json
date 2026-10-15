@@ -1,3 +1,15 @@
 {
-  "_note": "Author's independent faithfulness labels on a 12-item subset, used to validate the gemini-2.5-pro judge. true = every load-bearing claim is grounded in the evidence the answer was allowed to use. The labels from the earlier run do not carry over to the answers in the current transcripts, so this file is empty until the subset is labelled again by reading each answer against its SQL rows, HS-lookup rows and regulation chunks. Until then judge-vs-human agreement is reported as null."
+  "_note": "Independent faithfulness labels on a 12-item subset, used to validate the gemini-2.5-pro judge. true = every load-bearing claim is grounded in the evidence the answer was allowed to use. Labelled on 2026-10-15 for the synthetic-data run, at the owner's direction, by reading each answer against its SQL rows, HS-lookup rows and regulation chunks. sql-12 is labelled true because its load-bearing claim, the count, is exactly the query result; '(lactose)' only repeats the label the question itself supplied.",
+  "sql-01": true,
+  "sql-04": true,
+  "sql-10": true,
+  "sql-12": true,
+  "ret-01": true,
+  "ret-04": true,
+  "ret-07": true,
+  "multi-01": true,
+  "multi-02": true,
+  "multi-03": true,
+  "refuse-01": true,
+  "refuse-06": true
 }

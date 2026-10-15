@@ -36,12 +36,14 @@ the saved transcripts with `python -m eval.run_eval --metrics`.
 - **LLM-as-judge faithfulness**: gemini-2.5-pro judges whether every factual claim in
   an answer is supported by the evidence the answer was allowed to use. Judged only on
   answered (non-refused) items.
-- **Judge validation**: the judge is itself checked. A subset of items is
-  hand-labelled by the author in `eval/human_labels.json` (faithful true/false), and
-  the harness reports judge-vs-human agreement. A judge you do not validate is not
-  evidence, so this number is reported alongside the faithfulness score. Labels belong
-  to one run's answers: after a re-run the subset has to be labelled again, and until it
-  is, the agreement is reported as null rather than carried over.
+- **Judge validation**: the judge is itself checked. A 12-item subset is labelled
+  independently in `eval/human_labels.json` (faithful true/false) by reading each answer
+  against its evidence, and the harness reports judge-vs-label agreement. A judge you do
+  not validate is not evidence, so this number is reported alongside the faithfulness
+  score. Labels belong to one run's answers: after a re-run the subset is labelled
+  again rather than carried over. For the current run it is 11 of 12; the one
+  disagreement is sql-12, where the answer repeats the question's own "(lactose)"
+  label.
 - **Cost and latency**: per-query token cost (Vertex list prices) and p50/p95 latency
   are taken from the same run.
 

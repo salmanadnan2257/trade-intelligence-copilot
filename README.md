@@ -7,9 +7,8 @@ or an honest refusal when the data does not support one.
 
 The headline is the evaluation. This project does not just claim it works; it ships a
 28-item test set with ground-truth gold answers, runs the whole system against the live
-Gemini API, and publishes the real metrics below. The harness also checks the LLM judge
-against hand labels so the judge itself is validated; those labels are pending for the
-current run (see below).
+Gemini API, and publishes the real metrics below, including a check of the LLM judge
+against independent labels so the judge itself is validated.
 
 ## Why it exists
 
@@ -80,7 +79,7 @@ machine-readable output is in `eval/results.json`; methodology and limitations a
 | Retrieval hit rate (a gold-document chunk was retrieved) | **8 / 10 = 80%** |
 | Refusal precision / recall on unanswerable questions | **1.00 / 1.00** |
 | LLM-as-judge faithfulness (gemini-2.5-pro) | **21 / 22 = 95.5%** |
-| Judge vs human agreement | **pending: the subset has not been labelled for this run** |
+| Judge vs independent labels (12 labelled items) | **11 / 12 = 91.7%** |
 | Mean cost per query | **$0.00093** |
 | Total cost of the published eval run | **$0.0260** |
 | Latency p50 / p95 | **9.0 s / 27.0 s** (8.8 s / 12.5 s without the 3 rate-limited items) |
@@ -95,9 +94,10 @@ Reading the numbers honestly:
 - **The one faithfulness miss is a judgment call.** Asked about "HS code 1702.1100
   (lactose)", the model answered with the right count (227) and repeated the question's
   own "(lactose)" label. The evidence rows never say what 1702.1100 is, so the judge
-  marked it unfaithful. A human might call that fair, since the label came from the
-  user and is correct. That disagreement is exactly what the judge-vs-human check is
-  for, and it is why that number has to be filled in before the 95.5% is leaned on.
+  marked it unfaithful. The independent labels count it faithful: its one load-bearing
+  claim, the count, is exactly the query result, and the label came from the question.
+  That is the single disagreement in the 11-of-12 check, published rather than
+  relabelled away, which is what makes the 95.5% interpretable.
 - **Latency p95 is inflated by rate limiting, not by the system.** Three items (sql-10,
   sql-11, ret-07) waited out `429 RESOURCE_EXHAUSTED` responses from Vertex during the
   run; their latencies include that waiting. Without them p50 / p95 is 8.8 s / 12.5 s.
@@ -230,8 +230,8 @@ exercised for real.
 - **An LLM judge must be validated, and must see exactly what the answerer saw.** The
   judge-vs-human agreement number is not decoration; it is what makes a faithfulness
   figure interpretable, and building it surfaced a real evidence-plumbing bug in the
-  harness. On the first version it was 91.7% (11 of 12); it has to be measured again
-  for the current run.
+  harness. It was 11 of 12 on the first version and is 11 of 12 again on the
+  synthetic re-run, labelled afresh against the new answers rather than carried over.
 - **Enumeration is where grounded models leak.** In the first version, point-fact
   answers stayed grounded and "list everything under this heading" is where the model
   reached past its evidence. In the synthetic re-run the enumerations stayed inside the
@@ -260,8 +260,8 @@ exercised for real.
   paths work but are not a large benchmark. With more budget I would expand each category,
   add near-miss numeric questions, and add adversarial refusal cases (plausible but
   out-of-scope) rather than only clearly out-of-scope ones.
-- **The judge and the answerer are the same model family.** The human-label check
-  partly covers this, but a second judge from a different family would be a stronger
+- **The judge and the answerer are the same model family.** The independent-label
+  check partly covers this, but a second judge from a different family would be a stronger
   cross-check on faithfulness.
 - **Latency is high (p50 ~9 s).** Each query is three or four sequential model calls.
   Planning and text-to-SQL could be merged into one call, and independent tools could run

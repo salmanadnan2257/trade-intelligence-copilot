@@ -25,9 +25,9 @@
     "judge_model": "gemini-2.5-pro"
   },
   "judge_vs_human_agreement": {
-    "agree": 0,
-    "labelled": 0,
-    "agreement": null
+    "agree": 11,
+    "labelled": 12,
+    "agreement": 0.917
   },
   "cost": {
     "total_usd": 0.025975,

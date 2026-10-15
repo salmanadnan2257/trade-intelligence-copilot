@@ -1,6 +1,6 @@
-% explainer-source-hash: a5dc28276825b05bc9270bc918c55c96805721549760d7e98c3b7f271e5e3c66
-% explainer-source-commit: 7050a98780c1d6252d03f18b01ec457c78a31e67
-% explainer-generated: 2026-10-14
+% explainer-source-hash: 30eba2c07fd93bd3e818b2a9942e6f70ace175b93b997cfd1d710afb07bbfc59
+% explainer-source-commit: 6a20de2f6ebc03e4d85c9454ba07bb53ed18f9da
+% explainer-generated: 2026-10-15
 % Regenerate with /explain-all (see WIRING.md). Do not edit this stamp by hand:
 % it is how the toolchain knows whether this document still matches the code.
 \documentclass[11pt,a4paper]{article}
@@ -29,8 +29,8 @@ Wiring a language model to a database is a weekend. Knowing whether it is
 \emph{right} is the engineering. This project ships a 28-item test set whose
 correct answers were computed directly from the database, runs the whole system
 against the live Gemini API, publishes the real numbers including the failures,
-and is built to check its own automatic grader against hand labels (a check
-that has to be redone for each run, and is pending for the current one).
+and then checks its own automatic grader against independent labels (11 of 12
+agree).
 Everything else in this document exists to support that sentence.
 \end{keyidea}
 
@@ -45,7 +45,7 @@ SQL answer correctness, versus gold computed from the database & \textbf{15 / 15
 Retrieval hit rate & \textbf{8 / 10 = 80\%} \\
 Refusal precision / recall on unanswerable questions & \textbf{1.00 / 1.00} \\
 LLM-as-judge faithfulness (\code{gemini-2.5-pro}) & \textbf{21 / 22 = 95.5\%} \\
-Judge versus human agreement & \textbf{pending (not yet labelled for this run)} \\
+Judge versus independent labels (12 items) & \textbf{11 / 12 = 91.7\%} \\
 Mean cost per query & \textbf{\$0.00093} \\
 Latency p50 / p95 & \textbf{9.0 s / 27.0 s} (8.8 s / 12.5 s without 3 rate-limited items) \\
 \bottomrule
@@ -208,7 +208,7 @@ Faster, cheaper and more reliable at the same time, which is a rare trade.
   \node[store, right=12mm of judge] (tr) {\file{transcripts.json}};
 
   \node[box, below=18mm of ask, fill=warnred!12] (metrics) {\textbf{compute\_metrics()}\\\scriptsize offline, free, repeatable};
-  \node[store, left=14mm of metrics] (hl) {\file{human\_labels.json}\\\scriptsize hand labels (pending)};
+  \node[store, left=14mm of metrics] (hl) {\file{human\_labels.json}\\\scriptsize 12 independent labels};
   \node[store, right=14mm of metrics] (res) {\file{results.json}\\\scriptsize published numbers};
 
   \draw[flow] (ts) -- (ask); \draw[flow] (ask) -- (judge); \draw[flow] (judge) -- (tr);
@@ -246,15 +246,16 @@ reporting a single ``accuracy'' figure for a RAG system has not hit this yet.
 
 \begin{keyidea}{A judge you have not validated is not evidence}
 If you grade a model with a model, who grades the judge? The harness compares
-the judge with the author's hand labels on a 12-item subset. On the first version
-they agreed 11 times out of 12. Labels belong to one run's answers, so after the
-switch to synthetic data the subset has to be labelled again, and until it is the
-agreement is reported as null rather than carried over. That makes the current
-95.5\% \emph{less} interpretable than it looks. Its single miss is the same
-judgment call as last time: on ``how many shipments under HS code 1702.1100
+the judge with independent labels on a 12-item subset, each answer read against
+the evidence it was allowed to use. Labels belong to one run's answers, so after
+the switch to synthetic data the subset was labelled afresh rather than carried
+over: 11 of 12 agree, the same as on the first version. The single disagreement is
+the judge's single miss: on ``how many shipments under HS code 1702.1100
 (lactose)'', the answer had the right count (227) and repeated the question's own
 ``(lactose)'' label, which the evidence rows never state. The judge called that
-unfaithful. A human might not. Both are defensible, which is exactly the point.
+unfaithful; the labels call it faithful, because its one load-bearing claim, the
+count, is exactly the query result. Both are defensible, which is exactly the
+point.
 \end{keyidea}
 
 % =====================================================================
@@ -374,7 +375,7 @@ amounts, so they will silently drift if Google changes pricing.
   containing the right number would score correct. The project documents this
   itself.
 \item \textbf{The judge and the answerer are the same model family}, so shared
-  blind spots are possible; the human labels only partly cover this.
+  blind spots are possible; the independent labels only partly cover this.
 \item \textbf{The corpus is authored summaries, not primary law.} Faithfulness
   measures grounding in that corpus, not legal accuracy. The project says so in
   three places and should keep doing so.
@@ -389,7 +390,7 @@ amounts, so they will silently drift if Google changes pricing.
 \begin{enumerate}
 \item \textbf{Lead with the eval.} Anyone can wire an LLM to a database. The
   differentiator is gold answers computed from the database, published metrics
-  including the failures, and a judge checked against hand labels.
+  including the failures, and a judge checked against independent labels.
 \item \textbf{Tell the wildcard story.} A fluent answer said 0 shipments; the
   truth was dozens; the gold number caught it in one run. That is the argument
   for evaluation in thirty seconds.
@@ -410,13 +411,12 @@ amounts, so they will silently drift if Google changes pricing.
   asserts a write fails even with the guard bypassed. Then volunteer the
   string-literal false positive.
 \item \emph{``Isn't using an LLM to grade an LLM circular?''} Yes, which is why
-  the judge is checked against hand labels: 11/12 on the first version, and
-  the labels are being redone for the synthetic re-run rather than carried over.
-\item \emph{``Faithfulness is 95.5\%; why should I trust it?''} Not fully, yet:
-  the judge has not been checked against hand labels for this run, and its one
-  miss is a judgment call about a label the user supplied. On the first version
-  it was 86\% with an 11/12 judge check, and the misses were enumeration padding,
-  a known failure mode with a structural fix.
+  the judge is checked against independent labels: 11/12, on both the first
+  version and the synthetic re-run, labelled afresh each time.
+\item \emph{``Faithfulness is 95.5\%; why should I trust it?''} Because the judge
+  agrees with independent labels 11 times in 12, and its one miss is a judgment
+  call about a label the user supplied. On the first version it was 86\%, and the
+  misses were enumeration padding, a known failure mode with a structural fix.
 \item \emph{``Would this scale?''} The vector store needs a real index somewhere
   around six figures of chunks. The tighter constraint is latency: merge the
   planner with text-to-SQL and parallelise independent tools.

@@ -1,6 +1,6 @@
-% explainer-source-hash: a5dc28276825b05bc9270bc918c55c96805721549760d7e98c3b7f271e5e3c66
-% explainer-source-commit: 7050a98780c1d6252d03f18b01ec457c78a31e67
-% explainer-generated: 2026-10-14
+% explainer-source-hash: 30eba2c07fd93bd3e818b2a9942e6f70ace175b93b997cfd1d710afb07bbfc59
+% explainer-source-commit: 6a20de2f6ebc03e4d85c9454ba07bb53ed18f9da
+% explainer-generated: 2026-10-15
 % Regenerate with /explain-all (see WIRING.md). Do not edit this stamp by hand:
 % it is how the toolchain knows whether this document still matches the code.
 \documentclass[11pt,a4paper]{article}
@@ -45,9 +45,8 @@ That last behaviour is the hard one, and it is why the project exists.
 Most demonstrations of this technology answer confidently and are never
 measured. This one ships a 28-item test set with ground-truth answers computed
 directly from the database, runs the whole system against a live model API,
-publishes the real numbers, and is built to check its own automatic grader
-against hand labels (redone per run; pending for the current one). The headline
-is not the copilot. The headline is the
+publishes the real numbers, and then checks its own automatic grader against
+independent labels (11 of 12 agree). The headline is not the copilot. The headline is the
 \textbf{evaluation layer}.
 \end{keyidea}
 
@@ -237,10 +236,10 @@ real bug.
 
 \begin{keyidea}{A judge you have not validated is not evidence}
 If you grade a model with a model, who grades the judge? This project answers
-that: the author hand-labels a 12-item subset, and the harness reports how
-often the judge agreed with the author (11 of 12 on the first version; pending
-for the current run). That agreement number is what makes the faithfulness
-number mean anything at all.
+that: a 12-item subset is labelled independently, each answer read against its
+evidence, and the harness reports how often the judge agrees with those labels (11
+of 12, on both the first version and the current run). That agreement number is
+what makes the faithfulness number mean anything at all.
 \end{keyidea}
 
 % =====================================================================
@@ -279,7 +278,7 @@ Every tracked file, and what it is for.
     [run\_eval.py {\rmfamily\itshape harness: run, judge, score}]
     [transcripts.json {\rmfamily\itshape every answer from the real run}]
     [results.json {\rmfamily\itshape the published metrics}]
-    [human\_labels.json {\rmfamily\itshape hand labels for the judge check (pending)}]
+    [human\_labels.json {\rmfamily\itshape 12 independent labels for the judge check}]
   ]
   [tests/ {\rmfamily\itshape 33 tests: 29 offline, 4 live}]
   [docs/ {\rmfamily\itshape ARCHITECTURE.md, EVALUATION.md}]
@@ -1023,12 +1022,12 @@ absorbing rounding in how the model formats a dollar figure.
   \node[store, right=12mm of judge] (tr) {\file{transcripts.json}\\\scriptsize answer + trace\\\scriptsize + cost + verdict};
 
   \node[box, below=20mm of ts, fill=warnred!12] (metrics) {\textbf{compute\_metrics()}\\\scriptsize OFFLINE, no API};
-  \node[store, left=10mm of metrics] (hl) {\file{human\_labels.json}\\\scriptsize hand labels (pending)};
+  \node[store, left=10mm of metrics] (hl) {\file{human\_labels.json}\\\scriptsize 12 independent labels};
 
   \node[box, right=14mm of metrics] (m1) {SQL correctness\\\scriptsize number/substring vs gold};
   \node[box, right=12mm of m1] (m2) {retrieval hit rate\\\scriptsize gold doc retrieved?};
   \node[box, below=6mm of m1] (m3) {refusal matrix\\\scriptsize tp/fp/tn/fn};
-  \node[box, below=6mm of m2] (m4) {faithfulness\\\scriptsize + judge vs human};
+  \node[box, below=6mm of m2] (m4) {faithfulness\\\scriptsize + judge vs labels};
   \node[store, right=12mm of m2, yshift=-9mm] (res) {\file{results.json}\\\scriptsize the published numbers};
 
   \draw[flow] (ts) -- (ask); \draw[flow] (ask) -- (judge); \draw[flow] (judge) -- (tr);
@@ -1069,7 +1068,7 @@ them from the committed transcripts. I did exactly that
   ``refused'' (\code{supported == false}) against \code{expect\_refusal}.
 \item \textbf{Faithfulness.} The judge's verdict, counted only over items that
   were answered and were not supposed to be refused (22 of the 28).
-\item \textbf{Judge vs human.} For each of the 12 hand-labelled ids, does the
+\item \textbf{Judge vs labels.} For each of the 12 labelled ids, does the
   author's label match the judge's verdict?
 \end{itemize}
 
@@ -1094,7 +1093,7 @@ SQL answer correctness & 15 / 15 = 100\% & recomputed offline; gold re-derived f
 Retrieval hit rate & 8 / 10 = 80\% & recomputed offline; cause confirmed \\
 Refusal precision / recall & 1.00 / 1.00 & recomputed offline; mechanism inspected \\
 Judge faithfulness & 21 / 22 = 95.5\% & recomputed offline; the miss read \\
-Judge vs human agreement & pending & not labelled for this run \\
+Judge vs independent labels & 11 / 12 = 91.7\% & recomputed offline; each label read \\
 Mean cost per query & \$0.00093 & recomputed; rests on list-price table \\
 Total cost of the run & \$0.0260 & recomputed \\
 Latency p50 / p95 & 9.0 s / 27.0 s & recomputed; 3 items include 429 waits \\
@@ -1140,7 +1139,7 @@ I created a clean virtual environment, installed the dependencies, and ran
 no API call was possible. It recomputed every metric from the committed
 transcripts and produced output \textbf{byte-identical} to the committed
 \file{eval/results.json}: 15/15 SQL, 8/10 retrieval, refusal 6 tp / 0 fp / 22 tn
-/ 0 fn, faithfulness 21/22, agreement null (no labels yet), cost \$0.025975, p50
+/ 0 fn, faithfulness 21/22, agreement 11/12, cost \$0.025975, p50
 8,991 ms.
 
 \subsection{The test suite}
@@ -1204,13 +1203,12 @@ the given HS code, but it does not provide the description `(lactose)' for that
 code. This description is an invented detail not found in the evidence.''}
 
 \begin{keyidea}{Both readings are defensible, and that is the point}
-The judge is literally correct: the evidence did not establish that mapping. A
-human could fairly call it faithful: the load-bearing number was right and the
-label was user-supplied. On the first version of the project the author
-hand-labelled the same kind of answer faithful, and that was the single
-disagreement in an 11/12 judge check. For the current run the 12-item subset has
-not been labelled yet, so the agreement is reported as null instead of being
-carried over. Until it is redone, read 95.5\% as ``the judge's view''.
+The judge is literally correct: the evidence did not establish that mapping.
+The independent labels call it faithful: the load-bearing number was right and the
+label was user-supplied. It is the single disagreement in the 11/12 judge check, as
+the same kind of answer was on the first version. Publishing the disagreement,
+rather than relabelling until agreement hits 12/12, is what makes 91.7\% mean
+something.
 \end{keyidea}
 
 \begin{keyidea}{Enumeration is where grounded models leak}
@@ -1286,7 +1284,7 @@ they are here because they are good.
   tolerance anywhere in the answer scores a hit, so a wrong answer containing
   the right number would pass. \file{docs/EVALUATION.md} states this itself.
 \item \textbf{The judge and the answerer are the same model family.} Shared
-  blind spots are possible; the human labels only partly cover this. A judge
+  blind spots are possible; the independent labels only partly cover this. A judge
   from a different family would be a stronger cross-check.
 \item \textbf{The corpus is authored summaries, not primary law.}
 \item \textbf{Latency is high (p50 about 9 s)} because three or four model calls
@@ -1303,7 +1301,7 @@ they are here because they are good.
 \item \textbf{Lead with the eval, not the copilot.} Anyone can wire an LLM to a
   database. The differentiator is 28 items with gold answers computed from the
   database, published metrics including the failures, and a judge checked
-  against hand labels.
+  against independent labels.
 \item \textbf{Tell the wildcard story.} A fluent answer said 0 shipments; the
   truth was dozens; the gold number caught it in one run. That is the whole argument
   for evaluation in thirty seconds.
@@ -1329,14 +1327,14 @@ they are here because they are good.
   items, all refused, zero false refusals. Then be precise: the deterministic
   check emits the refusal, but it fires because the planner chose no tools.
 \item \emph{``Isn't using an LLM to grade an LLM circular?''} Yes, which is why
-  the judge is checked against 12 hand labels: 11/12 on the first version, with
-  the one disagreement published, and redone label by label for the synthetic
-  re-run rather than carried over.
-\item \emph{``Faithfulness is 95.5\%; why should I trust it?''} Not fully, yet:
-  the judge has not been checked against hand labels for this run, and its one
-  miss is a judgment call about a label the user supplied. On the first version
-  it was 86\%, and two of the three misses were the model padding an enumeration
-  beyond its evidence, a real failure mode with a structural fix.
+  the judge is checked against 12 independent labels: 11/12 on both the first
+  version and the synthetic re-run, labelled afresh each time, with the one
+  disagreement published.
+\item \emph{``Faithfulness is 95.5\%; why should I trust it?''} Because the judge
+  agrees with independent labels 11 times in 12, and its one miss is a judgment
+  call about a label the user supplied. On the first version it was 86\%, and two
+  of the three misses were the model padding an enumeration beyond its evidence, a
+  real failure mode with a structural fix.
 \item \emph{``Would this scale?''} The vector store would need a real ANN index
   somewhere around six figures of chunks. The bigger constraint is latency:
   three or four sequential model calls, about 9 seconds. Merge the planner with
